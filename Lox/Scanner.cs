@@ -116,7 +116,7 @@ namespace Lox
         {
             while (IsAlphaNumeric(Peek())) Advance();
 
-            var text = _source.Substring(_start, _current - _start + 1);
+            var text = _source.Substring(_start, _current - _start);
 
             if (!_keywords.TryGetValue(text, out TokenType type))
                 type = IDENTIFIER;
@@ -135,7 +135,7 @@ namespace Lox
                 while (IsDigit(Peek())) Advance();
             }
 
-            AddToken(NUMBER, Double.Parse(_source.Substring(_start, _current - _start + 1)));
+            AddToken(NUMBER, Double.Parse(_source.Substring(_start, _current - _start)));
         }
 
         private void String()
@@ -215,7 +215,7 @@ namespace Lox
 
         private void AddToken(TokenType type, object literal)
         {
-            var text = _source.Substring(_start, _current - _start + 1);
+            var text = _source.Substring(_start, _current - _start);
             _tokens.Add(new Token(type, text, literal, _line));
         }
     }

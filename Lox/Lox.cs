@@ -54,10 +54,23 @@ namespace Lox
         {
             var scanner = new Scanner(source);
             var tokens = scanner.ScanTokens();
+            var parser = new Parser(tokens);
+            var expression = parser.Parse();
 
-            foreach (var token in tokens)
+            if (_hadError) return;
+
+            Console.WriteLine(new AstPrinter().Print(expression));
+        }
+
+        public static void Error(Token token, string message)
+        {
+            if (token.Type == TokenType.EOF)
             {
-                Console.WriteLine(token);
+                Report(token.Line, "at end", message);
+            }
+            else
+            {
+                Report(token.Line, "at '" + token.Lexeme + "'", message);
             }
         }
 
