@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using Humanizer;
 
 namespace Lox.Tool
 {
@@ -74,17 +75,17 @@ namespace Lox.Tool
             {
                 var type = field.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
                 var name = field.Split(' ', StringSplitOptions.RemoveEmptyEntries)[1];
-                writer.WriteLine($"            public {type.Trim()} {name.Trim().Trim('@')} {{ get; }}");
+                writer.WriteLine($"            public {type.Trim()} {name.Trim().Trim('@').Titleize()} {{ get; }}");
             }
             // Constructor.
-            writer.WriteLine($"            {className}({fieldList})");
+            writer.WriteLine($"            public {className}({fieldList})");
             writer.WriteLine("            {");
 
             // Store parameters in fields.
             foreach (var field in fields)
             {
                 var name = field.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                writer.WriteLine($"                _{name[1].Trim().Trim('@')} = {name[1]};");
+                writer.WriteLine($"                {name[1].Trim().Trim('@').Titleize()} = {name[1]};");
             }
             writer.WriteLine("            }");
             writer.WriteLine("            public override R Accept<R>(IVisitor<R> visitor)");

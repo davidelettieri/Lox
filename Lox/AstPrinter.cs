@@ -9,21 +9,35 @@ namespace Lox
         public string Print(Expr expr) => expr.Accept(this);
 
         public string VisitBinaryExpr(Expr.Binary expr)
-            => Parenthesize(expr.)
+            => Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
 
         public string VisitGroupingExpr(Expr.Grouping expr)
-        {
-            throw new NotImplementedException();
-        }
+            => Parenthesize("group", expr.Expression);
 
         public string VisitLiteralExpr(Expr.Literal expr)
         {
-            throw new NotImplementedException();
+            if (expr.Value is null) return "nil";
+            return expr.Value.ToString();
         }
 
         public string VisitUnaryExpr(Expr.Unary expr)
+            => Parenthesize(expr.Operator.Lexeme, expr.Right);
+
+        private string Parenthesize(string name, params Expr[] exprs)
         {
-            throw new NotImplementedException();
+            var builder = new StringBuilder();
+
+            builder.Append("(").Append(name);
+
+            foreach (var expr in exprs)
+            {
+                builder.Append(" ");
+                builder.Append(expr.Accept(this));
+            }
+
+            builder.Append(")");
+
+            return builder.ToString();
         }
     }
 }

@@ -15,11 +15,11 @@ namespace Lox
             public Expr Left { get; }
             public Token Operator { get; }
             public Expr Right { get; }
-            Binary(expr left, token @operator, expr right)
+            public Binary(Expr left, Token @operator, Expr right)
             {
-                _Left = Left;
-                _Operator = @Operator;
-                _Right = Right;
+                Left = left;
+                Operator = @operator;
+                Right = right;
             }
             public override R Accept<R>(IVisitor<R> visitor)
             {
@@ -29,9 +29,9 @@ namespace Lox
         public class Grouping : Expr
         {
             public Expr Expression { get; }
-            Grouping(expr expression)
+            public Grouping(Expr expression)
             {
-                _Expression = Expression;
+                Expression = expression;
             }
             public override R Accept<R>(IVisitor<R> visitor)
             {
@@ -41,9 +41,9 @@ namespace Lox
         public class Literal : Expr
         {
             public Object Value { get; }
-            Literal(object value)
+            public Literal(Object value)
             {
-                _Value = Value;
+                Value = value;
             }
             public override R Accept<R>(IVisitor<R> visitor)
             {
@@ -54,10 +54,10 @@ namespace Lox
         {
             public Token Operator { get; }
             public Expr Right { get; }
-            Unary(token @operator, expr right)
+            public Unary(Token @operator, Expr right)
             {
-                _Operator = @Operator;
-                _Right = Right;
+                Operator = @operator;
+                Right = right;
             }
             public override R Accept<R>(IVisitor<R> visitor)
             {
