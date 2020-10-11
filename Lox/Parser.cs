@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using static Lox.TokenType;
 
 namespace Lox
@@ -19,20 +20,103 @@ namespace Lox
             _tokens = tokens;
         }
 
-        public Expr Parse()
+        public List<Stmt> Parse()
+        {
+            var statements = new List<Stmt>();
+
+            while (!IsAtEnd())
+            {
+                statements.Add(Declaration());
+            }
+
+            return statements;
+        }
+
+        private Expr Expression()
+            => Assignment();
+
+        private Stmt Declaration()
         {
             try
             {
-                return Expression();
+                if (Match(VAR)) return VarDeclaration();
+
+                return Statement();
             }
             catch (ParseError error)
             {
+                Syncronize();
                 return null;
             }
         }
 
-        private Expr Expression()
-            => Equality();
+        private Stmt Statement()
+        {
+            if (Match(PRINT)) return PrintStatement();
+            if (Match(LEFT_BRACE)) return new Stmt.Block(Block());
+            return ExpressionStatement();
+        }
+
+        private Stmt PrintStatement()
+        {
+            var value = Expression();
+            Consume(SEMICOLON, "Expect ';' after value.");
+            return new Stmt.Print(value);
+        }
+
+        private Stmt VarDeclaration()
+        {
+            Token name = Consume(IDENTIFIER, "Expect variable name.");
+
+            Expr initializer = null;
+            if (Match(EQUAL))
+            {
+                initializer = Expression();
+            }
+
+            Consume(SEMICOLON, "Expect ';' after variable declaration.");
+            return new Stmt.Var(name, initializer);
+        }
+
+        private Stmt ExpressionStatement()
+        {
+            var value = Expression();
+            Consume(SEMICOLON, "Expect ';' after value.");
+            return new Stmt.Expression(value);
+        }
+
+        private List<Stmt> Block()
+        {
+            var statements = new List<Stmt>();
+
+            while (!Check(RIGHT_BRACE) && !IsAtEnd())
+            {
+                statements.Add(Declaration());
+            }
+
+            Consume(RIGHT_BRACE, "Expect '}' after block.");
+            return statements;
+        }
+
+        private Expr Assignment()
+        {
+            var expr = Equality();
+
+            if (Match(EQUAL))
+            {
+                var equals = Previous();
+                var value = Assignment();
+
+                if (expr is Expr.Variable v)
+                {
+                    return new Expr.Assign(v.Name, value);
+                }
+
+                Error(equals, "Invalid assignment target.");
+            }
+
+            return expr;
+        }
 
         private Expr Equality()
         {
@@ -111,6 +195,11 @@ namespace Lox
             if (Match(NUMBER, STRING))
             {
                 return new Expr.Literal(Previous().Literal);
+            }
+
+            if (Match(IDENTIFIER))
+            {
+                return new Expr.Variable(Previous());
             }
 
             if (Match(LEFT_PAREN))

@@ -21,7 +21,17 @@ namespace Lox.Tool
                     "Binary   : Expr left, Token @operator, Expr right",
                     "Grouping : Expr expression",
                     "Literal  : Object value",
-                    "Unary    : Token @operator, Expr right"
+                    "Unary    : Token @operator, Expr right",
+                    "Variable : Token name",
+                    "Assign   : Token name, Expr value"
+                });
+
+                DefineAst(outputDir, "Stmt", new List<string>()
+                {
+                    "Block      : List<Stmt> statements",
+                    "Expression : Expr expr",
+                    "Print      : Expr expr",
+                    "Var        : Token name, Expr initializer"
                 });
             }
         }
@@ -32,6 +42,8 @@ namespace Lox.Tool
             using var writer = new StreamWriter(path);
 
             writer.WriteLine("using System;");
+            writer.WriteLine("using System.Collections.Generic;");
+            writer.WriteLine();
             writer.WriteLine("namespace Lox");
             writer.WriteLine("{");
             writer.WriteLine($"    public abstract class {baseName}");

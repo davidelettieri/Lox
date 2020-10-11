@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 namespace Lox
 {
     public abstract class Expr
@@ -9,6 +11,8 @@ namespace Lox
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
             R VisitUnaryExpr(Unary expr);
+            R VisitVariableExpr(Variable expr);
+            R VisitAssignExpr(Assign expr);
         }
         public class Binary : Expr
         {
@@ -62,6 +66,32 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitUnaryExpr(this);
+            }
+        }
+        public class Variable : Expr
+        {
+            public Token Name { get; }
+            public Variable(Token name)
+            {
+                Name = name;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitVariableExpr(this);
+            }
+        }
+        public class Assign : Expr
+        {
+            public Token Name { get; }
+            public Expr Value { get; }
+            public Assign(Token name, Expr value)
+            {
+                Name = name;
+                Value = value;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitAssignExpr(this);
             }
         }
 
