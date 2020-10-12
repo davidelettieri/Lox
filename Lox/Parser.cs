@@ -54,8 +54,19 @@ namespace Lox
         {
             if (Match(IF)) return IfStatement();
             if (Match(PRINT)) return PrintStatement();
+            if (Match(WHILE)) return WhileStatement();
             if (Match(LEFT_BRACE)) return new Stmt.Block(Block());
             return ExpressionStatement();
+        }
+
+        private Stmt WhileStatement()
+        {
+            Consume(LEFT_PAREN, "Expect '(' after if");
+            var expr = Expression();
+            Consume(RIGHT_PAREN, "Expect ')' after expression");
+            var stmt = Statement();
+
+            return new Stmt.While(expr, stmt);
         }
 
         private Stmt IfStatement()
@@ -117,7 +128,7 @@ namespace Lox
 
         private Expr Assignment()
         {
-            var expr = Equality();
+            var expr = Or();
 
             if (Match(EQUAL))
             {
@@ -130,6 +141,36 @@ namespace Lox
                 }
 
                 Error(equals, "Invalid assignment target.");
+            }
+
+            return expr;
+        }
+
+        private Expr Or()
+        {
+            var expr = And();
+
+            while (Match(OR))
+            {
+                var op = Previous();
+                var and = And();
+
+                expr = new Expr.Logical(expr, op, and);
+            }
+
+            return expr;
+        }
+
+        private Expr And()
+        {
+            var expr = Equality();
+
+            while (Match(AND))
+            {
+                var op = Previous();
+                var and = Equality();
+
+                expr = new Expr.Logical(expr, op, and);
             }
 
             return expr;

@@ -91,6 +91,16 @@ namespace Lox
             return null;
         }
 
+        public Void VisitWhileStmt(Stmt.While stmt)
+        {
+            while (IsTruthy(Evaluate(stmt.Condition)))
+            {
+                Execute(stmt.Body);
+            }
+
+            return null;
+        }
+
         public object VisitAssignExpr(Expr.Assign expr)
         {
             var value = Evaluate(expr.Value);
@@ -152,6 +162,22 @@ namespace Lox
 
         public object VisitLiteralExpr(Expr.Literal expr)
             => expr.Value;
+
+        public object VisitLogicalExpr(Expr.Logical expr)
+        {
+            var left = Evaluate(expr.Left);
+
+            if (expr.Operator.Type == OR)
+            {
+                if (IsTruthy(left)) return left;
+            }
+            else
+            {
+                if (!IsTruthy(left)) return left;
+            }
+
+            return Evaluate(expr.Right);
+        }
 
         public object VisitUnaryExpr(Expr.Unary expr)
         {
