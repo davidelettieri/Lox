@@ -52,9 +52,26 @@ namespace Lox
 
         private Stmt Statement()
         {
+            if (Match(IF)) return IfStatement();
             if (Match(PRINT)) return PrintStatement();
             if (Match(LEFT_BRACE)) return new Stmt.Block(Block());
             return ExpressionStatement();
+        }
+
+        private Stmt IfStatement()
+        {
+            Consume(LEFT_PAREN, "Expect '(' after if");
+            var expr = Expression();
+            Consume(RIGHT_PAREN, "Expect ')' after expression");
+            var thenBranch = Statement();
+            Stmt elseBranch = null;
+
+            if (Match(ELSE))
+            {
+                elseBranch = Statement();
+            }
+
+            return new Stmt.If(expr, thenBranch, elseBranch);
         }
 
         private Stmt PrintStatement()

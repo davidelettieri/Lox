@@ -21,6 +21,7 @@ namespace Lox.Tool
                     "Binary   : Expr left, Token @operator, Expr right",
                     "Grouping : Expr expression",
                     "Literal  : Object value",
+                    "Logical  : Expr left, Token @operator, Expr right",
                     "Unary    : Token @operator, Expr right",
                     "Variable : Token name",
                     "Assign   : Token name, Expr value"
@@ -30,6 +31,7 @@ namespace Lox.Tool
                 {
                     "Block      : List<Stmt> statements",
                     "Expression : Expr expr",
+                    "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
                     "Print      : Expr expr",
                     "Var        : Token name, Expr initializer"
                 });
@@ -87,7 +89,7 @@ namespace Lox.Tool
             {
                 var type = field.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
                 var name = field.Split(' ', StringSplitOptions.RemoveEmptyEntries)[1];
-                writer.WriteLine($"            public {type.Trim()} {name.Trim().Trim('@').Titleize()} {{ get; }}");
+                writer.WriteLine($"            public {type.Trim()} {name.Trim().Trim('@').Titleize().Replace(" ", "")} {{ get; }}");
             }
             // Constructor.
             writer.WriteLine($"            public {className}({fieldList})");
@@ -97,7 +99,7 @@ namespace Lox.Tool
             foreach (var field in fields)
             {
                 var name = field.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                writer.WriteLine($"                {name[1].Trim().Trim('@').Titleize()} = {name[1]};");
+                writer.WriteLine($"                {name[1].Trim().Trim('@').Titleize().Replace(" ","")} = {name[1]};");
             }
             writer.WriteLine("            }");
             writer.WriteLine("            public override R Accept<R>(IVisitor<R> visitor)");
