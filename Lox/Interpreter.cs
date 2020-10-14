@@ -62,9 +62,24 @@ namespace Lox
             return null;
         }
 
+        public Void VisitFunctionStmt(Stmt.Function stmt)
+        {
+            var function = new LoxFunction(stmt);
+            _environment.Define(stmt.Name.Lexeme, function);
+            return null;
+        }
+
+        public Void VisitReturnStmt(Stmt.Return stmt)
+        {
+            object value = null;
+            if (stmt.Value != null) value = Evaluate(stmt.Value);
+
+            throw new Return(value);
+        }
+
         public Void VisitIfStmt(Stmt.If stmt)
         {
-            if (IsTruthy(stmt.Condition))
+            if (IsTruthy(Evaluate(stmt.Condition)))
             {
                 Execute(stmt.ThenBranch);
             }
@@ -261,13 +276,6 @@ namespace Lox
                 return d.ToString();
 
             return value.ToString();
-        }
-
-        public Void VisitFunctionStmt(Stmt.Function stmt)
-        {
-            var function = new LoxFunction(stmt);
-            _environment.Define(stmt.Name.Lexeme, function);
-            return null;
         }
     }
 }

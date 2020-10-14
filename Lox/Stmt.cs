@@ -12,6 +12,7 @@ namespace Lox
             R VisitFunctionStmt(Function stmt);
             R VisitIfStmt(If stmt);
             R VisitPrintStmt(Print stmt);
+            R VisitReturnStmt(Return stmt);
             R VisitVarStmt(Var stmt);
             R VisitWhileStmt(While stmt);
         }
@@ -81,6 +82,20 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitPrintStmt(this);
+            }
+        }
+        public class Return : Stmt
+        {
+            public Token Keyword { get; }
+            public Expr Value { get; }
+            public Return(Token keyword, Expr value)
+            {
+                Keyword = keyword;
+                Value = value;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitReturnStmt(this);
             }
         }
         public class Var : Stmt
