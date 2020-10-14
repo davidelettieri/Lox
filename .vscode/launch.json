@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/Lox/bin/Debug/netcoreapp3.1/Lox.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Lox",
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "stopAtEntry": false
         },
         {

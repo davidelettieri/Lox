@@ -7,11 +7,12 @@ namespace Lox
     public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Void>
     {
         public LoxEnvironment Globals { get; } = new LoxEnvironment();
-        private LoxEnvironment _environment = new LoxEnvironment();
+        private LoxEnvironment _environment;
 
         public Interpreter()
         {
             Globals.Define("clock", new Clock());
+            _environment = Globals;
         }
 
         public void Intepret(List<Stmt> statements)
