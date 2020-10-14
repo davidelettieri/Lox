@@ -39,6 +39,7 @@ namespace Lox
         {
             try
             {
+                if (Match(FUN)) return Function("function");
                 if (Match(VAR)) return VarDeclaration();
 
                 return Statement();
@@ -105,7 +106,7 @@ namespace Lox
             if (condition == null) condition = new Expr.Literal(true);
             body = new Stmt.While(condition, body);
 
-            if(initializer != null)
+            if (initializer != null)
             {
                 body = new Stmt.Block(new List<Stmt>() { initializer, body });
             }
@@ -165,6 +166,31 @@ namespace Lox
             var value = Expression();
             Consume(SEMICOLON, "Expect ';' after value.");
             return new Stmt.Expression(value);
+        }
+
+        private Stmt.Function Function(string kind)
+        {
+            var name = Consume(IDENTIFIER, $"Expect {kind} name.");
+            Consume(LEFT_PAREN, $"Expect '(' after {kind} name.");
+            var parameters = new List<Token>();
+
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Can't have more than 255 parameters.");
+                    }
+
+                    parameters.Add(Consume(IDENTIFIER, "Expect parameter name."));
+                } while (Match(COMMA));
+            }
+
+            Consume(RIGHT_PAREN, "Expect ')' after parameters");
+            Consume(LEFT_BRACE, "Expect '{' after parameters");
+            var body = Block();
+            return new Stmt.Function(name, parameters, body);
         }
 
         private List<Stmt> Block()
@@ -295,7 +321,48 @@ namespace Lox
                 return new Expr.Unary(op, right);
             }
 
-            return Primary();
+            return Call();
+        }
+
+        private Expr FinishCall(Expr callee)
+        {
+            var arguments = new List<Expr>();
+
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    if (arguments.Count >= 255)
+                    {
+                        Error(Peek(), "Can't have more than 255 arguments");
+                    }
+
+                    arguments.Add(Expression());
+                } while (Match(COMMA));
+            }
+
+            var paren = Consume(RIGHT_PAREN, "Expect ')' after arguments");
+
+            return new Expr.Call(callee, paren, arguments);
+        }
+
+        private Expr Call()
+        {
+            var expr = Primary();
+
+            while (true)
+            {
+                if (Match(LEFT_PAREN))
+                {
+                    expr = FinishCall(expr);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return expr;
         }
 
         private Expr Primary()

@@ -8,6 +8,7 @@ namespace Lox
         public interface IVisitor<R>
         {
             R VisitBinaryExpr(Binary expr);
+            R VisitCallExpr(Call expr);
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
             R VisitLogicalExpr(Logical expr);
@@ -31,6 +32,22 @@ namespace Lox
                 return visitor.VisitBinaryExpr(this);
             }
         }
+        public class Call : Expr
+        {
+            public Expr Callee { get; }
+            public Token Paren { get; }
+            public List<Expr> Arguments { get; }
+            public Call(Expr callee, Token paren, List<Expr> arguments)
+            {
+                Callee = callee;
+                Paren = paren;
+                Arguments = arguments;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitCallExpr(this);
+            }
+        }
         public class Grouping : Expr
         {
             public Expr Expression { get; }
@@ -45,8 +62,8 @@ namespace Lox
         }
         public class Literal : Expr
         {
-            public Object Value { get; }
-            public Literal(Object value)
+            public object Value { get; }
+            public Literal(object value)
             {
                 Value = value;
             }

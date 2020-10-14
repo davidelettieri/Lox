@@ -10,4 +10,8 @@
     <Compile Remove="AstPrinter.cs" />
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="call &quot;generate expr.bat&quot;" />
+  </Target>
+
 </Project>

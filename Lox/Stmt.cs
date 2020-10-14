@@ -9,6 +9,7 @@ namespace Lox
         {
             R VisitBlockStmt(Block stmt);
             R VisitExpressionStmt(Expression stmt);
+            R VisitFunctionStmt(Function stmt);
             R VisitIfStmt(If stmt);
             R VisitPrintStmt(Print stmt);
             R VisitVarStmt(Var stmt);
@@ -36,6 +37,22 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitExpressionStmt(this);
+            }
+        }
+        public class Function : Stmt
+        {
+            public Token Name { get; }
+            public List<Token> Parameters { get; }
+            public List<Stmt> Body { get; }
+            public Function(Token name, List<Token> parameters, List<Stmt> body)
+            {
+                Name = name;
+                Parameters = parameters;
+                Body = body;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitFunctionStmt(this);
             }
         }
         public class If : Stmt

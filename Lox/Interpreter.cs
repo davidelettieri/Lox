@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 using static Lox.TokenType;
 
 namespace Lox
 {
     public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<Void>
     {
+        public LoxEnvironment Globals { get; } = new LoxEnvironment();
         private LoxEnvironment _environment = new LoxEnvironment();
+
+        public Interpreter()
+        {
+            _globals.Define("clock", new Clock());
+        }
 
         public void Intepret(List<Stmt> statements)
         {
@@ -157,6 +161,28 @@ namespace Lox
             return null;
         }
 
+        public object VisitCallExpr(Expr.Call expr)
+        {
+            var callee = Evaluate(expr.Callee);
+            var arguments = new List<object>();
+
+            foreach (var argument in expr.Arguments)
+            {
+                arguments.Add(Evaluate(argument));
+            }
+
+            if (callee is ILoxCallable function)
+            {
+                if (arguments.Count != function.Arity())
+                {
+                    throw new RuntimeError(expr.Paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
+                }
+                return function.Call(this, arguments);
+            }
+
+            throw new RuntimeError(expr.Paren, "Can only call functions and classes");
+        }
+
         public object VisitGroupingExpr(Expr.Grouping expr)
             => Evaluate(expr.Expression);
 
@@ -234,6 +260,11 @@ namespace Lox
                 return d.ToString();
 
             return value.ToString();
+        }
+
+        public Void VisitFunctionStmt(Stmt.Function stmt)
+        {
+            throw new NotImplementedException();
         }
     }
 }
