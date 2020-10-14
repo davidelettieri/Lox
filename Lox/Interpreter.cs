@@ -11,7 +11,7 @@ namespace Lox
 
         public Interpreter()
         {
-            _globals.Define("clock", new Clock());
+            Globals.Define("clock", new Clock());
         }
 
         public void Intepret(List<Stmt> statements)
@@ -31,7 +31,7 @@ namespace Lox
 
         private object Evaluate(Expr expr) => expr.Accept(this);
         private object Execute(Stmt statement) => statement.Accept(this);
-        private void ExecuteBlock(List<Stmt> statements, LoxEnvironment environment)
+        public void ExecuteBlock(List<Stmt> statements, LoxEnvironment environment)
         {
             var previous = _environment;
             try
@@ -264,7 +264,9 @@ namespace Lox
 
         public Void VisitFunctionStmt(Stmt.Function stmt)
         {
-            throw new NotImplementedException();
+            var function = new LoxFunction(stmt);
+            _environment.Define(stmt.Name.Lexeme, function);
+            return null;
         }
     }
 }
