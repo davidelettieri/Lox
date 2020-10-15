@@ -38,7 +38,11 @@ namespace Lox
         {
             try
             {
-                if (Match(FUN)) return Function("function");
+                if (Check(FUN) && CheckNext(IDENTIFIER))
+                {
+                    Consume(FUN, null);
+                    return Function("function");
+                }
                 if (Match(VAR)) return VarDeclaration();
 
                 return Statement();
@@ -429,7 +433,7 @@ namespace Lox
             Consume(RIGHT_PAREN, "Expect ')' after parameters");
             Consume(LEFT_BRACE, "Expect '{' after parameters");
             var body = Block();
-            
+
             return new Expr.AnonymousFunction(parameters, body);
         }
 
@@ -459,6 +463,13 @@ namespace Lox
             if (IsAtEnd()) return false;
 
             return Peek().Type == type;
+        }
+
+        private bool CheckNext(TokenType tokenType)
+        {
+            if (IsAtEnd()) return false;
+            if (_tokens[_current + 1].Type == EOF) return false;
+            return _tokens[_current + 1].Type == tokenType;
         }
 
         private Token Advance()
