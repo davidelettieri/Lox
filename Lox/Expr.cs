@@ -15,6 +15,7 @@ namespace Lox
             R VisitUnaryExpr(Unary expr);
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
+            R VisitAnonymousFunctionExpr(AnonymousFunction expr);
         }
         public class Binary : Expr
         {
@@ -126,6 +127,20 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitAssignExpr(this);
+            }
+        }
+        public class AnonymousFunction : Expr
+        {
+            public List<Token> Parameters { get; }
+            public List<Stmt> Body { get; }
+            public AnonymousFunction(List<Token> parameters, List<Stmt> body)
+            {
+                Parameters = parameters;
+                Body = body;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitAnonymousFunctionExpr(this);
             }
         }
 

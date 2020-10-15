@@ -199,6 +199,9 @@ namespace Lox
             throw new RuntimeError(expr.Paren, "Can only call functions and classes");
         }
 
+        public object VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
+            => new LoxAnonymousFunction(expr, _environment);
+
         public object VisitGroupingExpr(Expr.Grouping expr)
             => Evaluate(expr.Expression);
 

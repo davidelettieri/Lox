@@ -18,14 +18,15 @@ namespace Lox.Tool
             {
                 var outputDir = args[0];
                 DefineAst(outputDir, "Expr", new List<string>() {
-                    "Binary   : Expr left, Token @operator, Expr right",
-                    "Call     : Expr callee, Token paren, List<Expr> arguments",
-                    "Grouping : Expr expression",
-                    "Literal  : object value",
-                    "Logical  : Expr left, Token @operator, Expr right",
-                    "Unary    : Token @operator, Expr right",
-                    "Variable : Token name",
-                    "Assign   : Token name, Expr value"
+                    "Binary             : Expr left, Token @operator, Expr right",
+                    "Call               : Expr callee, Token paren, List<Expr> arguments",
+                    "Grouping           : Expr expression",
+                    "Literal            : object value",
+                    "Logical            : Expr left, Token @operator, Expr right",
+                    "Unary              : Token @operator, Expr right",
+                    "Variable           : Token name",
+                    "Assign             : Token name, Expr value",
+                    "AnonymousFunction  : List<Token> parameters, List<Stmt> body"
                 });
 
                 DefineAst(outputDir, "Stmt", new List<string>()

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using static Lox.TokenType;
 
 namespace Lox
@@ -401,7 +400,37 @@ namespace Lox
                 return new Expr.Grouping(expr);
             }
 
+            if (Match(FUN))
+            {
+                return FunctionExpr();
+            }
+
             throw Error(Peek(), "Expect expression.");
+        }
+
+        private Expr FunctionExpr()
+        {
+            Consume(LEFT_PAREN, $"Expect '(' after fun.");
+            var parameters = new List<Token>();
+
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    if (parameters.Count >= 255)
+                    {
+                        Error(Peek(), "Can't have more than 255 parameters.");
+                    }
+
+                    parameters.Add(Consume(IDENTIFIER, "Expect parameter name."));
+                } while (Match(COMMA));
+            }
+
+            Consume(RIGHT_PAREN, "Expect ')' after parameters");
+            Consume(LEFT_BRACE, "Expect '{' after parameters");
+            var body = Block();
+            
+            return new Expr.AnonymousFunction(parameters, body);
         }
 
         private bool Match(params TokenType[] types)
