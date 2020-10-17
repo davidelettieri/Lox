@@ -8,6 +8,7 @@ namespace Lox
     {
         public LoxEnvironment Globals { get; } = new LoxEnvironment();
         private LoxEnvironment _environment;
+        private readonly Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
 
         public Interpreter()
         {
@@ -48,6 +49,11 @@ namespace Lox
             {
                 _environment = previous;
             }
+        }
+
+        internal void Resolve(Expr expr, int depth)
+        {
+            _locals[expr] = depth;
         }
 
         public Void VisitBlockStmt(Stmt.Block stmt)
@@ -125,7 +131,15 @@ namespace Lox
         {
             var value = Evaluate(expr.Value);
 
-            _environment.Assign(expr.Name, value);
+            if (_locals.TryGetValue(expr, out var distance))
+            {
+                _environment.AssignAt(distance, expr.Name, value);
+            }
+            else
+            {
+                Globals.Assign(expr.Name, value);
+            }
+
             return value;
         }
 
@@ -243,6 +257,15 @@ namespace Lox
 
         public object VisitVariableExpr(Expr.Variable expr)
             => _environment.Get(expr.Name);
+
+        private object LookUpVariable(Token name, Expr expr)
+        {
+            if (_locals.TryGetValue(expr, out var distance))
+            {
+                return _environment.GetAt(distance, name.Lexeme);
+            }
+            return Globals.Get(name);
+        }
 
         private void CheckNumberOperand(Token op, object operand)
         {

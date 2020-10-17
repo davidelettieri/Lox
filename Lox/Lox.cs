@@ -58,6 +58,11 @@ namespace Lox
 
             if (_hadError) return;
 
+            var resolver = new Resolver(_interpreter);
+            resolver.Resolve(statements);
+
+            if (_hadError) return;
+
             _interpreter.Intepret(statements);
         }
 
