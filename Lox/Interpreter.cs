@@ -64,7 +64,24 @@ namespace Lox
 
         public Void VisitClassStmt(Stmt.Class stmt)
         {
+            object superclass = null;
+            if (stmt.Superclass != null)
+            {
+                superclass = Evaluate(stmt.Superclass);
+
+                if (!(superclass is LoxClass))
+                {
+                    throw new RuntimeError(stmt.Superclass.Name, "Superclass must be a class");
+                }
+            }
             _environment.Define(stmt.Name.Lexeme, null);
+
+            if (stmt.Superclass != null)
+            {
+                _environment = new LoxEnvironment(_environment);
+                _environment.Define(stmt.Name.Lexeme, superclass);
+            }
+
             var methods = new Dictionary<string, LoxFunction>();
             foreach (var method in stmt.Methods)
             {
@@ -73,7 +90,13 @@ namespace Lox
                 methods[method.Name.Lexeme] = function;
             }
 
-            var lclass = new LoxClass(stmt.Name.Lexeme, methods);
+            var lclass = new LoxClass(stmt.Name.Lexeme, superclass as LoxClass, methods);
+
+            if (superclass != null)
+            {
+                _environment = _environment.Enclosing;
+            }
+
             _environment.Assign(stmt.Name, lclass);
             return null;
         }
@@ -278,6 +301,21 @@ namespace Lox
             }
 
             throw new RuntimeError(expr.Name, "Only instances have fields.");
+        }
+
+        public object VisitSuperExpr(Expr.Super expr)
+        {
+            var distance = _locals[expr];
+            var superclass = _environment.GetAt(distance, "super") as LoxClass;
+            var obj = _environment.GetAt(distance - 1, "this") as LoxInstance;
+            var method = superclass.FindMethod(expr.Method.Lexeme);
+
+            if (method == null)
+            {
+                throw new RuntimeError(expr.Method, $"Undefined property '{expr.Method.Lexeme}'.");
+            }
+
+            return method.Bind(obj);
         }
 
         public object VisitThisExpr(Expr.This expr)

@@ -76,6 +76,21 @@ namespace Lox
             _currentClass = ClassType.CLASS;
             Declare(stmt.Name);
             Define(stmt.Name);
+
+            if (stmt.Superclass != null &&
+                stmt.Name.Lexeme.Equals(stmt.Superclass.Name.Lexeme, StringComparison.Ordinal))
+            {
+                Lox.Error(stmt.Superclass.Name, "A class can't inherit from itself.");
+            }
+
+            if (stmt.Superclass != null)
+            {
+                _currentClass = ClassType.SUBCLASS;
+                Resolve(stmt.Superclass);
+                BeginScope();
+                _scopes.Peek()["super"] = true;
+            }
+
             BeginScope();
             _scopes.Peek()["this"] = true;
             foreach (var method in stmt.Methods)
@@ -89,6 +104,9 @@ namespace Lox
                 ResolveFunction(method, declaration);
             }
             EndScope();
+
+            if (stmt.Superclass != null) EndScope();
+
             _currentClass = enclosingClass;
             return null;
         }
@@ -207,6 +225,20 @@ namespace Lox
         {
             Resolve(expr.Value);
             Resolve(expr.Obj);
+            return null;
+        }
+
+        public Void VisitSuperExpr(Expr.Super expr)
+        {
+            if (_currentClass == ClassType.NONE)
+            {
+                Lox.Error(expr.Keyword, "Can't use 'super' outside of a class");
+            }
+            else if (_currentClass != ClassType.SUBCLASS)
+            {
+                Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
+            }
+            ResolveLocal(expr, expr.Keyword);
             return null;
         }
 

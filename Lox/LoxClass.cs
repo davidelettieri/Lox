@@ -6,10 +6,12 @@ namespace Lox
     {
         public string Name { get; }
         private readonly Dictionary<string, LoxFunction> _methods;
+        private readonly LoxClass _superclass;
 
-        public LoxClass(string name, Dictionary<string, LoxFunction> methods)
+        public LoxClass(string name, LoxClass superclass, Dictionary<string, LoxFunction> methods)
         {
             Name = name;
+            _superclass = superclass;
             _methods = methods;
         }
 
@@ -18,6 +20,11 @@ namespace Lox
             if (_methods.TryGetValue(name, out var method))
             {
                 return method;
+            }
+
+            if (_superclass != null)
+            {
+                return _superclass.FindMethod(name);
             }
 
             return null;

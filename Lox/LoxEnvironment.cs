@@ -7,17 +7,17 @@ namespace Lox
     public class LoxEnvironment
     {
         private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
-        private readonly LoxEnvironment _enclosing;
+        public LoxEnvironment Enclosing { get; }
 
-        public LoxEnvironment() => _enclosing = null;
-        public LoxEnvironment(LoxEnvironment enclosing) => _enclosing = enclosing;
+        public LoxEnvironment() => Enclosing = null;
+        public LoxEnvironment(LoxEnvironment enclosing) => Enclosing = enclosing;
 
         public void Define(string name, object value) => _values[name] = value;
 
         public object Get(Token name)
         {
             if (_values.TryGetValue(name.Lexeme, out var value)) return value;
-            if (_enclosing != null) return _enclosing.Get(name);
+            if (Enclosing != null) return Enclosing.Get(name);
 
             throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'.");
         }
@@ -30,9 +30,9 @@ namespace Lox
                 return;
             }
 
-            if (_enclosing != null)
+            if (Enclosing != null)
             {
-                _enclosing.Assign(name, value);
+                Enclosing.Assign(name, value);
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace Lox
 
             for (int i = 0; i < distance; i++)
             {
-                environment = environment._enclosing;
+                environment = environment.Enclosing;
             }
 
             return environment;

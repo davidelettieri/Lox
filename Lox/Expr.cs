@@ -15,6 +15,7 @@ namespace Lox
             R VisitLogicalExpr(Logical expr);
             R VisitUnaryExpr(Unary expr);
             R VisitSetExpr(Set expr);
+            R VisitSuperExpr(Super expr);
             R VisitThisExpr(This expr);
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
@@ -134,6 +135,20 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitSetExpr(this);
+            }
+        }
+        public class Super : Expr
+        {
+            public Token Keyword { get; }
+            public Token Method { get; }
+            public Super(Token keyword, Token method)
+            {
+                Keyword = keyword;
+                Method = method;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitSuperExpr(this);
             }
         }
         public class This : Expr

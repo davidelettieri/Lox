@@ -58,6 +58,15 @@ namespace Lox
         private Stmt ClassDeclaration()
         {
             var name = Consume(IDENTIFIER, "Expect class name");
+
+            Expr.Variable superclass = null;
+
+            if (Match(LESS))
+            {
+                Consume(IDENTIFIER, "Expect superclass name");
+                superclass = new Expr.Variable(Previous());
+            }
+
             Consume(LEFT_BRACE, "Expect '{' before class body");
             var methods = new List<Stmt.Function>();
             while (!Check(RIGHT_BRACE) && !IsAtEnd())
@@ -67,7 +76,7 @@ namespace Lox
 
             Consume(RIGHT_BRACE, "Expect '}' after class body");
 
-            return new Stmt.Class(name, methods);
+            return new Stmt.Class(name, superclass, methods);
         }
 
         private Stmt Statement()
@@ -417,7 +426,15 @@ namespace Lox
                 return new Expr.Literal(Previous().Literal);
             }
 
-             if (Match(THIS)) return new Expr.This(Previous());
+            if (Match(SUPER))
+            {
+                var keyword = Previous();
+                Consume(DOT, "Expect '.' after 'super'.");
+                var method = Consume(IDENTIFIER, "Expect superclass method name.");
+                return new Expr.Super(keyword, method);
+            }
+
+            if (Match(THIS)) return new Expr.This(Previous());
 
             if (Match(IDENTIFIER))
             {
