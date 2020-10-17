@@ -55,7 +55,5 @@ namespace Lox
 
             return environment;
         }
-
-
     }
 }

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lox
 {
-     public class LoxAnonymousFunction : ILoxCallable
+    public class LoxAnonymousFunction : ILoxCallable
     {
         private readonly Expr.AnonymousFunction _declaration;
         private readonly LoxEnvironment _closure;
@@ -42,11 +43,20 @@ namespace Lox
     {
         private readonly Stmt.Function _declaration;
         private readonly LoxEnvironment _closure;
+        private readonly bool _isInitializer;
 
-        public LoxFunction(Stmt.Function declaration, LoxEnvironment closure)
+        public LoxFunction(Stmt.Function declaration, LoxEnvironment closure, bool isInitializer)
         {
             _declaration = declaration;
             _closure = closure;
+            _isInitializer = isInitializer;
+        }
+
+        public LoxFunction Bind(LoxInstance loxInstance)
+        {
+            var environment = new LoxEnvironment(_closure);
+            environment.Define("this", loxInstance);
+            return new LoxFunction(_declaration, environment, _isInitializer);
         }
 
         public int Arity() => _declaration.Parameters.Count;
@@ -65,11 +75,17 @@ namespace Lox
             }
             catch (Return returnValue)
             {
+                if (_isInitializer) return _closure.GetAt(0, "this");
+                
                 return returnValue.Value;
             }
+
+            if (_isInitializer) return _closure.GetAt(0, "this");
+
             return null;
         }
 
         public override string ToString() => $"<fn {_declaration.Name.Lexeme}>";
+
     }
 }

@@ -20,10 +20,13 @@ namespace Lox.Tool
                 DefineAst(outputDir, "Expr", new List<string>() {
                     "Binary             : Expr left, Token @operator, Expr right",
                     "Call               : Expr callee, Token paren, List<Expr> arguments",
+                    "Get                : Expr obj, Token name",
                     "Grouping           : Expr expression",
                     "Literal            : object value",
                     "Logical            : Expr left, Token @operator, Expr right",
                     "Unary              : Token @operator, Expr right",
+                    "Set                : Expr obj, Token name, Expr value",
+                    "This               : Token keyword",
                     "Variable           : Token name",
                     "Assign             : Token name, Expr value",
                     "AnonymousFunction  : List<Token> parameters, List<Stmt> body"
@@ -32,6 +35,7 @@ namespace Lox.Tool
                 DefineAst(outputDir, "Stmt", new List<string>()
                 {
                     "Block      : List<Stmt> statements",
+                    "Class      : Token name, List<Stmt.Function> methods",
                     "Expression : Expr expr",
                     "Function   : Token name, List<Token> parameters, List<Stmt> body",
                     "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",

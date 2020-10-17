@@ -9,10 +9,13 @@ namespace Lox
         {
             R VisitBinaryExpr(Binary expr);
             R VisitCallExpr(Call expr);
+            R VisitGetExpr(Get expr);
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
             R VisitLogicalExpr(Logical expr);
             R VisitUnaryExpr(Unary expr);
+            R VisitSetExpr(Set expr);
+            R VisitThisExpr(This expr);
             R VisitVariableExpr(Variable expr);
             R VisitAssignExpr(Assign expr);
             R VisitAnonymousFunctionExpr(AnonymousFunction expr);
@@ -47,6 +50,20 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitCallExpr(this);
+            }
+        }
+        public class Get : Expr
+        {
+            public Expr Obj { get; }
+            public Token Name { get; }
+            public Get(Expr obj, Token name)
+            {
+                Obj = obj;
+                Name = name;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitGetExpr(this);
             }
         }
         public class Grouping : Expr
@@ -101,6 +118,34 @@ namespace Lox
             public override R Accept<R>(IVisitor<R> visitor)
             {
                 return visitor.VisitUnaryExpr(this);
+            }
+        }
+        public class Set : Expr
+        {
+            public Expr Obj { get; }
+            public Token Name { get; }
+            public Expr Value { get; }
+            public Set(Expr obj, Token name, Expr value)
+            {
+                Obj = obj;
+                Name = name;
+                Value = value;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitSetExpr(this);
+            }
+        }
+        public class This : Expr
+        {
+            public Token Keyword { get; }
+            public This(Token keyword)
+            {
+                Keyword = keyword;
+            }
+            public override R Accept<R>(IVisitor<R> visitor)
+            {
+                return visitor.VisitThisExpr(this);
             }
         }
         public class Variable : Expr

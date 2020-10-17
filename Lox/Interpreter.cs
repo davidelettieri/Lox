@@ -62,6 +62,22 @@ namespace Lox
             return null;
         }
 
+        public Void VisitClassStmt(Stmt.Class stmt)
+        {
+            _environment.Define(stmt.Name.Lexeme, null);
+            var methods = new Dictionary<string, LoxFunction>();
+            foreach (var method in stmt.Methods)
+            {
+                var isInitializer = method.Name.Lexeme.Equals("init", StringComparison.Ordinal);
+                var function = new LoxFunction(method, _environment, isInitializer);
+                methods[method.Name.Lexeme] = function;
+            }
+
+            var lclass = new LoxClass(stmt.Name.Lexeme, methods);
+            _environment.Assign(stmt.Name, lclass);
+            return null;
+        }
+
         public Void VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.Expr);
@@ -70,7 +86,7 @@ namespace Lox
 
         public Void VisitFunctionStmt(Stmt.Function stmt)
         {
-            var function = new LoxFunction(stmt, _environment);
+            var function = new LoxFunction(stmt, _environment, false);
             _environment.Define(stmt.Name.Lexeme, function);
             return null;
         }
@@ -213,6 +229,18 @@ namespace Lox
             throw new RuntimeError(expr.Paren, "Can only call functions and classes");
         }
 
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            var obj = Evaluate(expr.Obj);
+
+            if (obj is LoxInstance li)
+            {
+                return li.Get(expr.Name);
+            }
+
+            throw new RuntimeError(expr.Name, "Only instances have properties");
+        }
+
         public object VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
             => new LoxAnonymousFunction(expr, _environment);
 
@@ -237,6 +265,23 @@ namespace Lox
 
             return Evaluate(expr.Right);
         }
+
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            var obj = Evaluate(expr.Obj);
+
+            if (obj is LoxInstance li)
+            {
+                var value = Evaluate(expr.Value);
+                li.Set(expr.Name, value);
+                return value;
+            }
+
+            throw new RuntimeError(expr.Name, "Only instances have fields.");
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+            => LookUpVariable(expr.Keyword, expr);
 
         public object VisitUnaryExpr(Expr.Unary expr)
         {

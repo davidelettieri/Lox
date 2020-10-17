@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Lox
@@ -7,6 +8,7 @@ namespace Lox
         private readonly Interpreter _interpreter;
         private readonly Stack<Dictionary<string, bool>> _scopes = new Stack<Dictionary<string, bool>>();
         private FunctionType _currentFunction = FunctionType.NONE;
+        private ClassType _currentClass = ClassType.NONE;
         public Resolver(Interpreter interpreter)
         {
             _interpreter = interpreter;
@@ -54,7 +56,7 @@ namespace Lox
             {
                 if (scopeArray[i].ContainsKey(name.Lexeme))
                 {
-                    _interpreter.Resolve(expr, _scopes.Count - 1 - i);
+                    _interpreter.Resolve(expr, i);
                     return;
                 }
             }
@@ -65,6 +67,29 @@ namespace Lox
             BeginScope();
             Resolve(stmt.Statements);
             EndScope();
+            return null;
+        }
+
+        public Void VisitClassStmt(Stmt.Class stmt)
+        {
+            var enclosingClass = _currentClass;
+            _currentClass = ClassType.CLASS;
+            Declare(stmt.Name);
+            Define(stmt.Name);
+            BeginScope();
+            _scopes.Peek()["this"] = true;
+            foreach (var method in stmt.Methods)
+            {
+                var declaration = FunctionType.METHOD;
+                if (method.Name.Lexeme.Equals("init", StringComparison.Ordinal))
+                {
+                    declaration = FunctionType.INITIALIZER;
+                }
+
+                ResolveFunction(method, declaration);
+            }
+            EndScope();
+            _currentClass = enclosingClass;
             return null;
         }
 
@@ -104,6 +129,10 @@ namespace Lox
             }
             if (stmt.Value != null)
             {
+                if (_currentFunction == FunctionType.INITIALIZER)
+                {
+                    Lox.Error(stmt.Keyword, "Can't return a value from an initializer");
+                }
                 Resolve(stmt.Value);
             }
 
@@ -154,6 +183,12 @@ namespace Lox
             return null;
         }
 
+        public Void VisitGetExpr(Expr.Get expr)
+        {
+            Resolve(expr.Obj);
+            return null;
+        }
+
         public Void VisitGroupingExpr(Expr.Grouping expr)
         {
             Resolve(expr.Expression);
@@ -165,6 +200,24 @@ namespace Lox
         public Void VisitLogicalExpr(Expr.Logical expr)
         {
             Resolve(expr.Right);
+            return null;
+        }
+
+        public Void VisitSetExpr(Expr.Set expr)
+        {
+            Resolve(expr.Value);
+            Resolve(expr.Obj);
+            return null;
+        }
+
+        public Void VisitThisExpr(Expr.This expr)
+        {
+            if (_currentClass == ClassType.NONE)
+            {
+                Lox.Error(expr.Keyword, "Can't use 'this' outside of a class.");
+                return null;
+            }
+            ResolveLocal(expr, expr.Keyword);
             return null;
         }
 
