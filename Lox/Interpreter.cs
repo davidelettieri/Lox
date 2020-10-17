@@ -79,7 +79,7 @@ namespace Lox
             if (stmt.Superclass != null)
             {
                 _environment = new LoxEnvironment(_environment);
-                _environment.Define(stmt.Name.Lexeme, superclass);
+                _environment.Define("super", superclass);
             }
 
             var methods = new Dictionary<string, LoxFunction>();
