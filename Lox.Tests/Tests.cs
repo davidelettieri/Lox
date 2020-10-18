@@ -607,22 +607,6 @@ namespace Lox.Tests {
             var result = RunLoxWithArgument("./test/constructor/return_value.lox");
             var count = 0;
         }
-        [Fact(DisplayName=" Note: This is just for the expression evaluating chapter which evaluates an")]
-        public void Expressions_Evaluate()
-        {
-            var result = RunLoxWithArgument("./test/expressions/evaluate.lox");
-            var count = 0;
-            Assert.Equal("2\r",result[count]);
-            count++;
-        }
-        [Fact(DisplayName=" Note: This is just for the expression parsing chapter which prints the AST.")]
-        public void Expressions_Parse()
-        {
-            var result = RunLoxWithArgument("./test/expressions/parse.lox");
-            var count = 0;
-            Assert.Equal("(+ (group (- 5.0 (group (- 3.0 1.0)))) (- 1.0))\r",result[count]);
-            count++;
-        }
         [Fact(DisplayName="Field_CallFunctionField")]
         public void Field_CallFunctionField()
         {
@@ -1009,11 +993,15 @@ namespace Lox.Tests {
             var result = RunLoxWithArgument("./test/for/statement_increment.lox");
             var count = 0;
         }
-        [Fact(DisplayName=" [line 3] Error at '{': Expect expression.")]
+        [Fact(DisplayName=" expect: [line 3] Error at '{': Expect expression.")]
         public void For_StatementInitializer()
         {
             var result = RunLoxWithArgument("./test/for/statement_initializer.lox");
             var count = 0;
+            Assert.Equal("[line 3] Error at '{': Expect expression.\r",result[count]);
+            count++;
+            Assert.Equal("[line 3] Error at ')': Expect ';' after expression.\r",result[count]);
+            count++;
         }
         [Fact(DisplayName=" Single-expression body.")]
         public void For_Syntax()

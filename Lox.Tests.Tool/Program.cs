@@ -78,7 +78,7 @@ namespace Lox.Tests.Tool
             sb.AppendLine("\")]");
             sb.AppendLine($"        public void {testName}()");
             sb.AppendLine("        {");
-            sb.AppendLine($"            var result = RunLoxWithArgument(\"{filePath.Replace('\\', '/')}\");");
+            sb.AppendLine($"            var result = RunLoxWithArgument(\"{filePath.Replace('\\', '/')}.lox\");");
             sb.AppendLine($"            var count = 0;");
 
             foreach (var item in lines)
