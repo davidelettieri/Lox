@@ -340,7 +340,7 @@ namespace Lox
         }
 
         public object VisitVariableExpr(Expr.Variable expr)
-            => _environment.Get(expr.Name);
+            => LookUpVariable(expr.Name, expr);
 
         private object LookUpVariable(Token name, Expr expr)
         {
@@ -374,6 +374,10 @@ namespace Lox
         {
             if (a is null && b is null) return true;
             if (a is null) return false;
+            if (a is double d && double.IsNaN(d))
+                return false;
+            if (b is double e && double.IsNaN(e))
+                return false;
 
             return a.Equals(b);
         }
@@ -383,7 +387,7 @@ namespace Lox
             if (value is null) return "nil";
 
             if (value is double d)
-                return d.ToString();
+                return d.ToString(CultureInfo.InvariantCulture);
 
             if (value is bool b)
                 return b.ToString().ToLower(CultureInfo.InvariantCulture);

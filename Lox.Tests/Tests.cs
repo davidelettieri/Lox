@@ -139,61 +139,61 @@ namespace Lox.Tests {
             var result = RunLoxWithArgument("./test/assignment/undefined.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_BinaryTrees")]
+        [Fact(DisplayName="Benchmark_BinaryTrees", Skip="skip")]
         public void Benchmark_BinaryTrees()
         {
             var result = RunLoxWithArgument("./test/benchmark/binary_trees.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_Equality")]
+        [Fact(DisplayName="Benchmark_Equality", Skip="skip")]
         public void Benchmark_Equality()
         {
             var result = RunLoxWithArgument("./test/benchmark/equality.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_Fib")]
+        [Fact(DisplayName="Benchmark_Fib", Skip="skip")]
         public void Benchmark_Fib()
         {
             var result = RunLoxWithArgument("./test/benchmark/fib.lox");
             var count = 0;
         }
-        [Fact(DisplayName=" This benchmark stresses instance creation and initializer calling.")]
+        [Fact(DisplayName=" This benchmark stresses instance creation and initializer calling.", Skip="skip")]
         public void Benchmark_Instantiation()
         {
             var result = RunLoxWithArgument("./test/benchmark/instantiation.lox");
             var count = 0;
         }
-        [Fact(DisplayName=" This benchmark stresses just method invocation.")]
+        [Fact(DisplayName=" This benchmark stresses just method invocation.", Skip="skip")]
         public void Benchmark_Invocation()
         {
             var result = RunLoxWithArgument("./test/benchmark/invocation.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_MethodCall")]
+        [Fact(DisplayName="Benchmark_MethodCall", Skip="skip")]
         public void Benchmark_MethodCall()
         {
             var result = RunLoxWithArgument("./test/benchmark/method_call.lox");
             var count = 0;
         }
-        [Fact(DisplayName=" This benchmark stresses both field and method lookup.")]
+        [Fact(DisplayName=" This benchmark stresses both field and method lookup.", Skip="skip")]
         public void Benchmark_Properties()
         {
             var result = RunLoxWithArgument("./test/benchmark/properties.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_StringEquality")]
+        [Fact(DisplayName="Benchmark_StringEquality", Skip="skip")]
         public void Benchmark_StringEquality()
         {
             var result = RunLoxWithArgument("./test/benchmark/string_equality.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_Trees")]
+        [Fact(DisplayName="Benchmark_Trees", Skip="skip")]
         public void Benchmark_Trees()
         {
             var result = RunLoxWithArgument("./test/benchmark/trees.lox");
             var count = 0;
         }
-        [Fact(DisplayName="Benchmark_Zoo")]
+        [Fact(DisplayName="Benchmark_Zoo", Skip="skip")]
         public void Benchmark_Zoo()
         {
             var result = RunLoxWithArgument("./test/benchmark/zoo.lox");
@@ -1955,160 +1955,6 @@ namespace Lox.Tests {
             var result = RunLoxWithArgument("./test/return/return_nil_if_no_value.lox");
             var count = 0;
             Assert.Equal("nil\r",result[count]);
-            count++;
-        }
-        [Fact(DisplayName="Scanning_Identifiers")]
-        public void Scanning_Identifiers()
-        {
-            var result = RunLoxWithArgument("./test/scanning/identifiers.lox");
-            var count = 0;
-            Assert.Equal("IDENTIFIER andy null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER formless null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER fo null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER _ null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER _123 null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER _abc null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER ab123 null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_ null\r",result[count]);
-            count++;
-            Assert.Equal("EOF  null\r",result[count]);
-            count++;
-        }
-        [Fact(DisplayName="Scanning_Keywords")]
-        public void Scanning_Keywords()
-        {
-            var result = RunLoxWithArgument("./test/scanning/keywords.lox");
-            var count = 0;
-            Assert.Equal("AND and null\r",result[count]);
-            count++;
-            Assert.Equal("CLASS class null\r",result[count]);
-            count++;
-            Assert.Equal("ELSE else null\r",result[count]);
-            count++;
-            Assert.Equal("FALSE false null\r",result[count]);
-            count++;
-            Assert.Equal("FOR for null\r",result[count]);
-            count++;
-            Assert.Equal("FUN fun null\r",result[count]);
-            count++;
-            Assert.Equal("IF if null\r",result[count]);
-            count++;
-            Assert.Equal("NIL nil null\r",result[count]);
-            count++;
-            Assert.Equal("OR or null\r",result[count]);
-            count++;
-            Assert.Equal("RETURN return null\r",result[count]);
-            count++;
-            Assert.Equal("SUPER super null\r",result[count]);
-            count++;
-            Assert.Equal("THIS this null\r",result[count]);
-            count++;
-            Assert.Equal("TRUE true null\r",result[count]);
-            count++;
-            Assert.Equal("VAR var null\r",result[count]);
-            count++;
-            Assert.Equal("WHILE while null\r",result[count]);
-            count++;
-            Assert.Equal("EOF  null\r",result[count]);
-            count++;
-        }
-        [Fact(DisplayName="Scanning_Numbers")]
-        public void Scanning_Numbers()
-        {
-            var result = RunLoxWithArgument("./test/scanning/numbers.lox");
-            var count = 0;
-            Assert.Equal("NUMBER 123 123.0\r",result[count]);
-            count++;
-            Assert.Equal("NUMBER 123.456 123.456\r",result[count]);
-            count++;
-            Assert.Equal("DOT . null\r",result[count]);
-            count++;
-            Assert.Equal("NUMBER 456 456.0\r",result[count]);
-            count++;
-            Assert.Equal("NUMBER 123 123.0\r",result[count]);
-            count++;
-            Assert.Equal("DOT . null\r",result[count]);
-            count++;
-            Assert.Equal("EOF  null\r",result[count]);
-            count++;
-        }
-        [Fact(DisplayName="Scanning_Punctuators")]
-        public void Scanning_Punctuators()
-        {
-            var result = RunLoxWithArgument("./test/scanning/punctuators.lox");
-            var count = 0;
-            Assert.Equal("LEFT_PAREN ( null\r",result[count]);
-            count++;
-            Assert.Equal("RIGHT_PAREN ) null\r",result[count]);
-            count++;
-            Assert.Equal("LEFT_BRACE { null\r",result[count]);
-            count++;
-            Assert.Equal("RIGHT_BRACE } null\r",result[count]);
-            count++;
-            Assert.Equal("SEMICOLON ; null\r",result[count]);
-            count++;
-            Assert.Equal("COMMA , null\r",result[count]);
-            count++;
-            Assert.Equal("PLUS + null\r",result[count]);
-            count++;
-            Assert.Equal("MINUS - null\r",result[count]);
-            count++;
-            Assert.Equal("STAR * null\r",result[count]);
-            count++;
-            Assert.Equal("BANG_EQUAL != null\r",result[count]);
-            count++;
-            Assert.Equal("EQUAL_EQUAL == null\r",result[count]);
-            count++;
-            Assert.Equal("LESS_EQUAL <= null\r",result[count]);
-            count++;
-            Assert.Equal("GREATER_EQUAL >= null\r",result[count]);
-            count++;
-            Assert.Equal("BANG_EQUAL != null\r",result[count]);
-            count++;
-            Assert.Equal("LESS < null\r",result[count]);
-            count++;
-            Assert.Equal("GREATER > null\r",result[count]);
-            count++;
-            Assert.Equal("SLASH / null\r",result[count]);
-            count++;
-            Assert.Equal("DOT . null\r",result[count]);
-            count++;
-            Assert.Equal("EOF  null\r",result[count]);
-            count++;
-        }
-        //[Fact(DisplayName="Scanning_Strings")]
-        //public void Scanning_Strings()
-        //{
-        //    var result = RunLoxWithArgument("./test/scanning/strings.lox");
-        //    var count = 0;
-        //    Assert.Equal("STRING "" \r",result[count]);
-        //    count++;
-        //    Assert.Equal("STRING "string" string\r",result[count]);
-        //    count++;
-        //    Assert.Equal("EOF  null\r",result[count]);
-        //    count++;
-        //}
-        [Fact(DisplayName="Scanning_Whitespace")]
-        public void Scanning_Whitespace()
-        {
-            var result = RunLoxWithArgument("./test/scanning/whitespace.lox");
-            var count = 0;
-            Assert.Equal("IDENTIFIER space null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER tabs null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER newlines null\r",result[count]);
-            count++;
-            Assert.Equal("IDENTIFIER end null\r",result[count]);
-            count++;
-            Assert.Equal("EOF  null\r",result[count]);
             count++;
         }
         [Fact(DisplayName=" Tests that we correctly track the line info across multiline strings.")]

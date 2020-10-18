@@ -617,24 +617,6 @@
     <None Update="test\return\return_nil_if_no_value.lox">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="test\scanning\identifiers.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test\scanning\keywords.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test\scanning\numbers.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test\scanning\punctuators.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test\scanning\strings.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="test\scanning\whitespace.lox">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="test\string\error_after_multiline.lox">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

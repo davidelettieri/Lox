@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lox
 {
@@ -51,12 +52,13 @@ namespace Lox
 
         private void ResolveLocal(Expr expr, Token name)
         {
-            var scopeArray = _scopes.ToArray();
+            var t = _scopes.ToArray();
+            var scopeArray = _scopes.Reverse().ToArray();
             for (int i = _scopes.Count - 1; i >= 0; i--)
             {
                 if (scopeArray[i].ContainsKey(name.Lexeme))
                 {
-                    _interpreter.Resolve(expr, i);
+                    _interpreter.Resolve(expr, _scopes.Count - 1 - i);
                     return;
                 }
             }
@@ -217,6 +219,7 @@ namespace Lox
 
         public Void VisitLogicalExpr(Expr.Logical expr)
         {
+            Resolve(expr.Left);
             Resolve(expr.Right);
             return null;
         }
@@ -278,7 +281,7 @@ namespace Lox
 
         public Void VisitVariableExpr(Expr.Variable expr)
         {
-            if (_scopes.Count > 0 && !_scopes.Peek().TryGetValue(expr.Name.Lexeme, out var defined) && !defined)
+            if (_scopes.Count > 0 && _scopes.Peek().TryGetValue(expr.Name.Lexeme, out var defined) && !defined)
             {
                 Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
             }

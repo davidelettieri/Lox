@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using static Lox.TokenType;
 
 namespace Lox
@@ -135,7 +136,7 @@ namespace Lox
                 while (IsDigit(Peek())) Advance();
             }
 
-            AddToken(NUMBER, Double.Parse(_source.Substring(_start, _current - _start)));
+            AddToken(NUMBER, double.Parse(_source.Substring(_start, _current - _start), CultureInfo.InvariantCulture));
         }
 
         private void String()

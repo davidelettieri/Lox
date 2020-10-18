@@ -9,5 +9,7 @@ namespace Lox
 
         public object Call(Interpreter interpreter, List<object> arguments)
             => DateTime.UtcNow.Ticks / 10000.0;
+
+        public override string ToString() => "<native fn>";
     }
 }

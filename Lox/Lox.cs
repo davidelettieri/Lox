@@ -10,6 +10,10 @@ namespace Lox
         private static bool _hadRuntimeError = false;
         static void Main(string[] args)
         {
+            var oldInputEncoding = Console.InputEncoding;
+            var oldOutputEncoding = Console.OutputEncoding;
+            Console.InputEncoding = System.Text.Encoding.UTF8;
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             if (args.Length > 1)
             {
                 Console.WriteLine("Usage: Lox [script]");
@@ -23,6 +27,9 @@ namespace Lox
             {
                 RunPrompt();
             }
+
+            Console.InputEncoding = oldInputEncoding;
+            Console.OutputEncoding = oldOutputEncoding;
         }
 
         private static void RunFile(string path)
@@ -92,7 +99,7 @@ namespace Lox
 
         private static void Report(int line, string where, string message)
         {
-            Console.WriteLine($"[line {line} ] Error {where}: {message}");
+            Console.WriteLine($"[line {line}] Error {where}: {message}");
             _hadError = true;
         }
     }

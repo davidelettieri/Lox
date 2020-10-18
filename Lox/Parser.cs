@@ -147,7 +147,7 @@ namespace Lox
         {
             Consume(LEFT_PAREN, "Expect '(' after if");
             var expr = Expression();
-            Consume(RIGHT_PAREN, "Expect ')' after expression");
+            Consume(RIGHT_PAREN, "Expect ')' after condition");
             var stmt = Statement();
 
             return new Stmt.While(expr, stmt);
@@ -157,7 +157,7 @@ namespace Lox
         {
             Consume(LEFT_PAREN, "Expect '(' after if");
             var expr = Expression();
-            Consume(RIGHT_PAREN, "Expect ')' after expression");
+            Consume(RIGHT_PAREN, "Expect ')' after condition");
             var thenBranch = Statement();
             Stmt elseBranch = null;
 
@@ -205,7 +205,7 @@ namespace Lox
         private Stmt ExpressionStatement()
         {
             var value = Expression();
-            Consume(SEMICOLON, "Expect ';' after value.");
+            Consume(SEMICOLON, "Expect ';' after expression.");
             return new Stmt.Expression(value);
         }
 

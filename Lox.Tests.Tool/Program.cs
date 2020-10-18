@@ -1,8 +1,5 @@
 ﻿using Humanizer;
-using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Lox.Tests.Tool
@@ -73,8 +70,15 @@ namespace Lox.Tests.Tool
             if (lines.Length > 0 && lines[0].StartsWith("//"))
                 displayName = lines[0].Substring(2);
 
+            if (directoryName.Contains("benchmark"))
+            {
+            }
             sb.Append("        [Fact(DisplayName=\"");
             sb.Append(displayName);
+            if (directoryName.Contains("benchmark"))
+            {
+                sb.Append("\", Skip=\"skip");
+            }
             sb.AppendLine("\")]");
             sb.AppendLine($"        public void {testName}()");
             sb.AppendLine("        {");
