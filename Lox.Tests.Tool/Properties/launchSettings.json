@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Lox.Tests.Tool": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\Max\\Source\\Repos\\Lox\\Lox.Tests"
+    }
+  }
+}

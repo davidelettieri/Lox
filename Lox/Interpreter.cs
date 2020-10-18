@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using static Lox.TokenType;
 
 namespace Lox
@@ -383,6 +384,9 @@ namespace Lox
 
             if (value is double d)
                 return d.ToString();
+
+            if (value is bool b)
+                return b.ToString().ToLower(CultureInfo.InvariantCulture);
 
             return value.ToString();
         }

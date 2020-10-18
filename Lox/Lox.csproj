@@ -14,4 +14,8 @@
     <Exec Command="call &quot;generate expr.bat&quot;" />
   </Target>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="call &quot;copy lox for tests.bat&quot;" />
+  </Target>
+
 </Project>
