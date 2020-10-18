@@ -10,9 +10,9 @@
     <Compile Remove="AstPrinter.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="call &quot;generate expr.bat&quot;" />
