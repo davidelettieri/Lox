@@ -5,5 +5,5 @@ I just ported all the code from the original Java implementation. Some changes w
 
 # Tests
 
-Tests were copied as is from the implementation, I used a console app to build the test cases from the .lox file in the test folders. 
+Tests were copied as is from the implementation, I used a console app to build the test cases from the .lox files in the test folders. 
 
