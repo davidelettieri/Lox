@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Lox
+namespace Lox;
+
+public class Clock : ILoxCallable
 {
-    public class Clock : ILoxCallable
-    {
-        public int Arity() => 0;
+    public int Arity() => 0;
 
-        public object Call(Interpreter interpreter, List<object> arguments)
-            => DateTime.UtcNow.Ticks / 10000.0;
+    public object Call(Interpreter interpreter, List<object> arguments)
+        => DateTime.UtcNow.Ticks / 10000.0;
 
-        public override string ToString() => "<native fn>";
-    }
+    public override string ToString() => "<native fn>";
 }

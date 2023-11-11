@@ -1,10 +1,9 @@
-namespace Lox
+namespace Lox;
+
+public enum FunctionType
 {
-    public enum FunctionType
-    {
-        NONE,
-        FUNCTION,
-        INITIALIZER,
-        METHOD
-    }
+    NONE,
+    FUNCTION,
+    INITIALIZER,
+    METHOD
 }

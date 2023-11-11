@@ -1,54 +1,45 @@
 using System.Collections.Generic;
 
-namespace Lox
+namespace Lox;
+
+public class LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxFunction> methods)
+    : ILoxCallable
 {
-    public class LoxClass : ILoxCallable
+    public string Name { get; } = name;
+
+    public LoxFunction? FindMethod(string name)
     {
-        public string Name { get; }
-        private readonly Dictionary<string, LoxFunction> _methods;
-        private readonly LoxClass _superclass;
-
-        public LoxClass(string name, LoxClass superclass, Dictionary<string, LoxFunction> methods)
+        if (methods.TryGetValue(name, out var method))
         {
-            Name = name;
-            _superclass = superclass;
-            _methods = methods;
+            return method;
         }
 
-        public LoxFunction FindMethod(string name)
+        if (superclass is not null)
         {
-            if (_methods.TryGetValue(name, out var method))
-            {
-                return method;
-            }
-
-            if (_superclass != null)
-            {
-                return _superclass.FindMethod(name);
-            }
-
-            return null;
+            return superclass.FindMethod(name);
         }
 
-        public override string ToString()
-            => Name;
+        return null;
+    }
 
-        public int Arity()
+    public override string ToString()
+        => Name;
+
+    public int Arity()
+    {
+        var initializer = FindMethod("init");
+
+        return initializer?.Arity() ?? 0;
+    }
+
+    public object Call(Interpreter interpreter, List<object> arguments)
+    {
+        var instance = new LoxInstance(this);
+        var initializer = FindMethod("init");
+        if (initializer != null)
         {
-            var initializer = FindMethod("init");
-
-            return initializer?.Arity() ?? 0;
+            initializer.Bind(instance).Call(interpreter, arguments);
         }
-
-        public object Call(Interpreter interpreter, List<object> arguments)
-        {
-            var instance = new LoxInstance(this);
-            var initializer = FindMethod("init");
-            if (initializer != null)
-            {
-                initializer.Bind(instance).Call(interpreter, arguments);
-            }
-            return instance;
-        }
+        return instance;
     }
 }

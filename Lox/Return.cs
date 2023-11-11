@@ -1,14 +1,8 @@
 using System;
 
-namespace Lox
-{
-    public class Return : Exception
-    {
-        public object Value;
+namespace Lox;
 
-        public Return(object value) : base()
-        {
-            Value = value;
-        }
-    }
+public class ReturnException(object? value) : Exception
+{
+    public object? Value { get; }= value;
 }

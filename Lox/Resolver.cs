@@ -2,311 +2,282 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lox
+namespace Lox;
+
+public class Resolver(Interpreter interpreter) : IExprVisitor, IStmtVisitor 
 {
-    public class Resolver : Expr.IVisitor<Void>, Stmt.IVisitor<Void>
+    private readonly Stack<Dictionary<string, bool>> _scopes = new();
+    private FunctionType _currentFunction = FunctionType.NONE;
+    private ClassType _currentClass = ClassType.NONE;
+
+    public void Resolve(List<IStmt> statements)
     {
-        private readonly Interpreter _interpreter;
-        private readonly Stack<Dictionary<string, bool>> _scopes = new Stack<Dictionary<string, bool>>();
-        private FunctionType _currentFunction = FunctionType.NONE;
-        private ClassType _currentClass = ClassType.NONE;
-        public Resolver(Interpreter interpreter)
+        foreach (var statement in statements)
         {
-            _interpreter = interpreter;
+            Resolve(statement);
+        }
+    }
+
+    private void BeginScope()
+        => _scopes.Push(new Dictionary<string, bool>());
+
+    private void EndScope()
+        => _scopes.Pop();
+
+    private void Declare(Token name)
+    {
+        if (_scopes.Count == 0) return;
+
+        var scope = _scopes.Peek();
+
+        if (scope.ContainsKey(name.Lexeme))
+        {
+            Lox.Error(name, "Already a variable with this name in this scope.");
         }
 
-        public void Resolve(List<Stmt> statements)
+        scope[name.Lexeme] = false;
+    }
+
+    private void Define(Token name)
+    {
+        if (_scopes.Count == 0) return;
+
+        _scopes.Peek()[name.Lexeme] = true;
+    }
+
+    private void ResolveLocal(IExpr expr, Token name)
+    {
+        var t = _scopes.ToArray();
+        var scopeArray = _scopes.Reverse().ToArray();
+        for (int i = _scopes.Count - 1; i >= 0; i--)
         {
-            foreach (var statement in statements)
+            if (scopeArray[i].ContainsKey(name.Lexeme))
             {
-                Resolve(statement);
+                interpreter.Resolve(expr, _scopes.Count - 1 - i);
+                return;
             }
         }
+    }
 
-        private void BeginScope()
-            => _scopes.Push(new Dictionary<string, bool>());
+    public void Visit(Block stmt)
+    {
+        BeginScope();
+        Resolve(stmt.Statements);
+        EndScope();
+    }
 
-        private void EndScope()
-            => _scopes.Pop();
+    public void Visit(Class stmt)
+    {
+        var enclosingClass = _currentClass;
+        _currentClass = ClassType.CLASS;
+        Declare(stmt.Name);
+        Define(stmt.Name);
 
-        private void Declare(Token name)
+        if (stmt.Superclass != null &&
+            stmt.Name.Lexeme.Equals(stmt.Superclass.Name.Lexeme, StringComparison.Ordinal))
         {
-            if (_scopes.Count == 0) return;
-
-            var scope = _scopes.Peek();
-
-            if (scope.ContainsKey(name.Lexeme))
-            {
-                Lox.Error(name, "Already variable with this name in this scope.");
-            }
-
-            scope[name.Lexeme] = false;
+            Lox.Error(stmt.Superclass.Name, "A class can't inherit from itself.");
         }
 
-        private void Define(Token name)
+        if (stmt.Superclass != null)
         {
-            if (_scopes.Count == 0) return;
-
-            _scopes.Peek()[name.Lexeme] = true;
-        }
-
-        private void ResolveLocal(Expr expr, Token name)
-        {
-            var t = _scopes.ToArray();
-            var scopeArray = _scopes.Reverse().ToArray();
-            for (int i = _scopes.Count - 1; i >= 0; i--)
-            {
-                if (scopeArray[i].ContainsKey(name.Lexeme))
-                {
-                    _interpreter.Resolve(expr, _scopes.Count - 1 - i);
-                    return;
-                }
-            }
-        }
-
-        public Void VisitBlockStmt(Stmt.Block stmt)
-        {
+            _currentClass = ClassType.SUBCLASS;
+            Resolve(stmt.Superclass);
             BeginScope();
-            Resolve(stmt.Statements);
-            EndScope();
-            return null;
+            _scopes.Peek()["super"] = true;
         }
 
-        public Void VisitClassStmt(Stmt.Class stmt)
+        BeginScope();
+        _scopes.Peek()["this"] = true;
+        foreach (var method in stmt.Methods)
         {
-            var enclosingClass = _currentClass;
-            _currentClass = ClassType.CLASS;
-            Declare(stmt.Name);
-            Define(stmt.Name);
-
-            if (stmt.Superclass != null &&
-                stmt.Name.Lexeme.Equals(stmt.Superclass.Name.Lexeme, StringComparison.Ordinal))
+            var declaration = FunctionType.METHOD;
+            if (method.Name.Lexeme.Equals("init", StringComparison.Ordinal))
             {
-                Lox.Error(stmt.Superclass.Name, "A class can't inherit from itself.");
+                declaration = FunctionType.INITIALIZER;
             }
 
-            if (stmt.Superclass != null)
+            ResolveFunction(method, declaration);
+        }
+        EndScope();
+
+        if (stmt.Superclass != null) EndScope();
+
+        _currentClass = enclosingClass;
+    }
+
+    public void Visit(Expression stmt)
+    {
+        Resolve(stmt.Expr);
+    }
+
+    public void Visit(Function stmt)
+    {
+        Declare(stmt.Name);
+        Define(stmt.Name);
+        ResolveFunction(stmt, FunctionType.FUNCTION);
+    }
+
+    public void Visit(If stmt)
+    {
+        Resolve(stmt.Condition);
+        Resolve(stmt.ThenBranch);
+        if (stmt.ElseBranch != null) Resolve(stmt.ElseBranch);
+    }
+
+    public void Visit(Print stmt)
+    {
+        Resolve(stmt.Expr);
+    }
+
+    public void Visit(ReturnStmt stmt)
+    {
+        if (_currentFunction == FunctionType.NONE)
+        {
+            Lox.Error(stmt.Keyword, "Can't return from top-level code.");
+        }
+        if (stmt.Value != null)
+        {
+            if (_currentFunction == FunctionType.INITIALIZER)
             {
-                _currentClass = ClassType.SUBCLASS;
-                Resolve(stmt.Superclass);
-                BeginScope();
-                _scopes.Peek()["super"] = true;
+                Lox.Error(stmt.Keyword, "Can't return a value from an initializer.");
             }
-
-            BeginScope();
-            _scopes.Peek()["this"] = true;
-            foreach (var method in stmt.Methods)
-            {
-                var declaration = FunctionType.METHOD;
-                if (method.Name.Lexeme.Equals("init", StringComparison.Ordinal))
-                {
-                    declaration = FunctionType.INITIALIZER;
-                }
-
-                ResolveFunction(method, declaration);
-            }
-            EndScope();
-
-            if (stmt.Superclass != null) EndScope();
-
-            _currentClass = enclosingClass;
-            return null;
+            Resolve(stmt.Value);
         }
+    }
 
-        public Void VisitExpressionStmt(Stmt.Expression stmt)
+    public void Visit(While stmt)
+    {
+        Resolve(stmt.Condition);
+        Resolve(stmt.Body);
+    }
+
+    public void Visit(Var stmt)
+    {
+        Declare(stmt.Name);
+        if (stmt.Initializer != null)
         {
-            Resolve(stmt.Expr);
-            return null;
+            Resolve(stmt.Initializer);
         }
+        Define(stmt.Name);
+    }
 
-        public Void VisitFunctionStmt(Stmt.Function stmt)
+    public void Visit(Assign expr)
+    {
+        Resolve(expr.Value);
+        ResolveLocal(expr, expr.Name);
+    }
+
+    public void Visit(Binary expr)
+    {
+        Resolve(expr.Left);
+        Resolve(expr.Right);
+    }
+
+    public void Visit(Call expr)
+    {
+        Resolve(expr.Callee);
+
+        foreach (var argument in expr.Arguments)
         {
-            Declare(stmt.Name);
-            Define(stmt.Name);
-            ResolveFunction(stmt, FunctionType.FUNCTION);
-            return null;
+            Resolve(argument);
         }
+    }
 
-        public Void VisitIfStmt(Stmt.If stmt)
+    public void Visit(Get expr)
+    {
+        Resolve(expr.Obj);
+    }
+
+    public void Visit(Grouping expr)
+    {
+        Resolve(expr.Expression);
+    }
+
+    public void Visit(Literal expr) {}
+
+    public void Visit(Logical expr)
+    {
+        Resolve(expr.Left);
+        Resolve(expr.Right);
+    }
+
+    public void Visit(Set expr)
+    {
+        Resolve(expr.Value);
+        Resolve(expr.Obj);
+    }
+
+    public void Visit(Super expr)
+    {
+        if (_currentClass == ClassType.NONE)
         {
-            Resolve(stmt.Condition);
-            Resolve(stmt.ThenBranch);
-            if (stmt.ElseBranch != null) Resolve(stmt.ElseBranch);
-            return null;
+            Lox.Error(expr.Keyword, "Can't use 'super' outside of a class.");
         }
-
-        public Void VisitPrintStmt(Stmt.Print stmt)
+        else if (_currentClass != ClassType.SUBCLASS)
         {
-            Resolve(stmt.Expr);
-            return null;
+            Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
         }
+        ResolveLocal(expr, expr.Keyword);
+    }
 
-        public Void VisitReturnStmt(Stmt.Return stmt)
+    public void Visit(This expr)
+    {
+        if (_currentClass == ClassType.NONE)
         {
-            if (_currentFunction == FunctionType.NONE)
-            {
-                Lox.Error(stmt.Keyword, "Can't return from top-level code.");
-            }
-            if (stmt.Value != null)
-            {
-                if (_currentFunction == FunctionType.INITIALIZER)
-                {
-                    Lox.Error(stmt.Keyword, "Can't return a value from an initializer");
-                }
-                Resolve(stmt.Value);
-            }
-
-            return null;
+            Lox.Error(expr.Keyword, "Can't use 'this' outside of a class.");
+            return;
         }
+        ResolveLocal(expr, expr.Keyword);
+    }
 
-        public Void VisitWhileStmt(Stmt.While stmt)
+    public void Visit(Unary expr)
+    {
+        Resolve(expr.Right);
+    }
+
+    public void Visit(AnonymousFunction expr)
+    {
+        var enclosingFunction = _currentFunction;
+        _currentFunction = FunctionType.FUNCTION;
+        BeginScope();
+        foreach (var param in expr.Parameters)
         {
-            Resolve(stmt.Condition);
-            Resolve(stmt.Body);
-            return null;
+            Declare(param);
+            Define(param);
         }
 
-        public Void VisitVarStmt(Stmt.Var stmt)
+        Resolve(expr.Body);
+        EndScope();
+        _currentFunction = enclosingFunction;
+    }
+
+    public void Visit(Variable expr)
+    {
+        if (_scopes.Count > 0 && _scopes.Peek().TryGetValue(expr.Name.Lexeme, out var defined) && !defined)
         {
-            Declare(stmt.Name);
-            if (stmt.Initializer != null)
-            {
-                Resolve(stmt.Initializer);
-            }
-            Define(stmt.Name);
-            return null;
+            Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
         }
 
-        public Void VisitAssignExpr(Expr.Assign expr)
+        ResolveLocal(expr, expr.Name);
+    }
+
+    private void Resolve(IStmt stmt) => stmt.Accept(this);
+    private void Resolve(IExpr expr) => expr.Accept(this);
+
+    private void ResolveFunction(Function function, FunctionType type)
+    {
+        var enclosingFunction = _currentFunction;
+        _currentFunction = type;
+        BeginScope();
+        foreach (var param in function.Parameters)
         {
-            Resolve(expr.Value);
-            ResolveLocal(expr, expr.Name);
-            return null;
+            Declare(param);
+            Define(param);
         }
 
-        public Void VisitBinaryExpr(Expr.Binary expr)
-        {
-            Resolve(expr.Left);
-            Resolve(expr.Right);
-            return null;
-        }
-
-        public Void VisitCallExpr(Expr.Call expr)
-        {
-            Resolve(expr.Callee);
-
-            foreach (var argument in expr.Arguments)
-            {
-                Resolve(argument);
-            }
-
-            return null;
-        }
-
-        public Void VisitGetExpr(Expr.Get expr)
-        {
-            Resolve(expr.Obj);
-            return null;
-        }
-
-        public Void VisitGroupingExpr(Expr.Grouping expr)
-        {
-            Resolve(expr.Expression);
-            return null;
-        }
-
-        public Void VisitLiteralExpr(Expr.Literal expr) => null;
-
-        public Void VisitLogicalExpr(Expr.Logical expr)
-        {
-            Resolve(expr.Left);
-            Resolve(expr.Right);
-            return null;
-        }
-
-        public Void VisitSetExpr(Expr.Set expr)
-        {
-            Resolve(expr.Value);
-            Resolve(expr.Obj);
-            return null;
-        }
-
-        public Void VisitSuperExpr(Expr.Super expr)
-        {
-            if (_currentClass == ClassType.NONE)
-            {
-                Lox.Error(expr.Keyword, "Can't use 'super' outside of a class");
-            }
-            else if (_currentClass != ClassType.SUBCLASS)
-            {
-                Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
-            }
-            ResolveLocal(expr, expr.Keyword);
-            return null;
-        }
-
-        public Void VisitThisExpr(Expr.This expr)
-        {
-            if (_currentClass == ClassType.NONE)
-            {
-                Lox.Error(expr.Keyword, "Can't use 'this' outside of a class.");
-                return null;
-            }
-            ResolveLocal(expr, expr.Keyword);
-            return null;
-        }
-
-        public Void VisitUnaryExpr(Expr.Unary expr)
-        {
-            Resolve(expr.Right);
-            return null;
-        }
-
-        public Void VisitAnonymousFunctionExpr(Expr.AnonymousFunction expr)
-        {
-            var enclosingFunction = _currentFunction;
-            _currentFunction = FunctionType.FUNCTION;
-            BeginScope();
-            foreach (var param in expr.Parameters)
-            {
-                Declare(param);
-                Define(param);
-            }
-
-            Resolve(expr.Body);
-            EndScope();
-            _currentFunction = enclosingFunction;
-            return null;
-        }
-
-        public Void VisitVariableExpr(Expr.Variable expr)
-        {
-            if (_scopes.Count > 0 && _scopes.Peek().TryGetValue(expr.Name.Lexeme, out var defined) && !defined)
-            {
-                Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
-            }
-
-            ResolveLocal(expr, expr.Name);
-            return null;
-        }
-
-        private void Resolve(Stmt stmt) => stmt.Accept(this);
-        private void Resolve(Expr expr) => expr.Accept(this);
-
-        private void ResolveFunction(Stmt.Function function, FunctionType type)
-        {
-            var enclosingFunction = _currentFunction;
-            _currentFunction = type;
-            BeginScope();
-            foreach (var param in function.Parameters)
-            {
-                Declare(param);
-                Define(param);
-            }
-
-            Resolve(function.Body);
-            EndScope();
-            _currentFunction = enclosingFunction;
-        }
+        Resolve(function.Body);
+        EndScope();
+        _currentFunction = enclosingFunction;
     }
 }

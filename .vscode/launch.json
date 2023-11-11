@@ -20,6 +20,14 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
+        },
+        {
+            "name": "tool",
+            "cwd": "craftinginterpreters",
+            "program": "tool/bin/test.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["chap08_statements", "--interpreter", "dotnet run --project ../Lox/Lox.csproj"]
         }
     ]
 }

@@ -1,38 +1,32 @@
 using System.Collections.Generic;
 
-namespace Lox
+namespace Lox;
+
+public class LoxInstance(LoxClass lclass)
 {
-    public class LoxInstance
+    private readonly Dictionary<string, object> _fields = new();
+
+    public override string ToString()
     {
-        private readonly LoxClass _class;
-        private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
-        public LoxInstance(LoxClass lclass)
+        return $"{lclass.Name} instance";
+    }
+
+    public object Get(Token name)
+    {
+        if (_fields.TryGetValue(name.Lexeme, out var value))
         {
-            _class = lclass;
+            return value;
         }
 
-        public override string ToString()
-        {
-            return $"{_class.Name} instance";
-        }
+        var method = lclass.FindMethod(name.Lexeme);
 
-        public object Get(Token name)
-        {
-            if (_fields.TryGetValue(name.Lexeme, out var value))
-            {
-                return value;
-            }
+        if (method != null) return method.Bind(this);
 
-            var method = _class.FindMethod(name.Lexeme);
+        throw new RuntimeError(name, $"Undefined property '{name.Lexeme}'.");
+    }
 
-            if (method != null) return method.Bind(this);
-
-            throw new RuntimeError(name, $"Undefined property '{name.Lexeme}'.");
-        }
-
-        public void Set(Token name, object value)
-        {
-            _fields[name.Lexeme] = value;
-        }
+    public void Set(Token name, object value)
+    {
+        _fields[name.Lexeme] = value;
     }
 }

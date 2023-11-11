@@ -1,8 +1,7 @@
-namespace Lox
-{
-    public enum ClassType {
-        NONE,
-        CLASS,
-        SUBCLASS
-    }
+namespace Lox;
+
+public enum ClassType {
+    NONE,
+    CLASS,
+    SUBCLASS
 }

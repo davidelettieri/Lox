@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Lox
+namespace Lox;
+
+public interface ILoxCallable
 {
-    public interface ILoxCallable
-    {
-        int Arity();
-        object Call(Interpreter interpreter, List<object> arguments);
-    }
+    int Arity();
+    object? Call(Interpreter interpreter, List<object> arguments);
 }

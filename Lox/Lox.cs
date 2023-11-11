@@ -1,106 +1,112 @@
 ﻿using System;
 using System.IO;
 
-namespace Lox
+namespace Lox;
+
+static class Lox
 {
-    class Lox
+    private static readonly Interpreter Interpreter = new();
+    private static bool _hadError;
+    private static bool _hadRuntimeError;
+    static void Main(string[] args)
     {
-        private static readonly Interpreter _interpreter = new Interpreter();
-        private static bool _hadError = false;
-        private static bool _hadRuntimeError = false;
-        static void Main(string[] args)
+        var oldInputEncoding = Console.InputEncoding;
+        var oldOutputEncoding = Console.OutputEncoding;
+        Console.InputEncoding = System.Text.Encoding.UTF8;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        if (args.Length > 1)
         {
-            var oldInputEncoding = Console.InputEncoding;
-            var oldOutputEncoding = Console.OutputEncoding;
-            Console.InputEncoding = System.Text.Encoding.UTF8;
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            if (args.Length > 1)
+            Console.WriteLine("Usage: Lox [script]");
+            Environment.Exit(64);
+        }
+        else if (args.Length == 1)
+        {
+            RunFile(args[0]);
+        }
+        else
+        {
+            RunPrompt();
+        }
+
+        Console.InputEncoding = oldInputEncoding;
+        Console.OutputEncoding = oldOutputEncoding;
+    }
+
+    private static void RunFile(string path)
+    {
+        var source = File.ReadAllText(path);
+        Run(source);
+        if (_hadError) Environment.Exit(65);
+        if (_hadRuntimeError) Environment.Exit(70);
+    }
+
+    private static void RunPrompt()
+    {
+        for (; ; )
+        {
+            Console.Write("> ");
+            var line = Console.ReadLine();
+            if (line is null)
             {
-                Console.WriteLine("Usage: Lox [script]");
-                Environment.Exit(64);
-            }
-            else if (args.Length == 1)
-            {
-                RunFile(args[0]);
-            }
-            else
-            {
-                RunPrompt();
+                break;
             }
 
-            Console.InputEncoding = oldInputEncoding;
-            Console.OutputEncoding = oldOutputEncoding;
+            Run(line);
+            _hadError = false;
         }
+    }
 
-        private static void RunFile(string path)
+    private static void Run(string source)
+    {
+        var scanner = new Scanner(source);
+        var tokens = scanner.ScanTokens();
+        var parser = new Parser(tokens);
+        var statements = parser.Parse();
+
+        if (_hadError) return;
+
+        var resolver = new Resolver(Interpreter);
+        resolver.Resolve(statements);
+
+        if (_hadError) return;
+
+        Interpreter.Interpret(statements);
+    }
+
+    public static void RuntimeError(RuntimeError error)
+    {
+        Console.Error.WriteLine($"{error.Message}\n[line {error.Token.Line}]");
+        _hadRuntimeError = true;
+    }
+
+
+    public static void Error(Token token, string? message)
+    {
+        if (token.Type == TokenType.EOF)
         {
-            var source = File.ReadAllText(path);
-            Run(source);
-            if (_hadError) Environment.Exit(65);
-            if (_hadRuntimeError) Environment.Exit(70);
+            Report(token.Line, " at end", message);
         }
-
-        private static void RunPrompt()
+        else
         {
-            for (; ; )
-            {
-                Console.Write("> ");
-                var line = Console.ReadLine();
-                if (line is null)
-                {
-                    break;
-                }
-
-                Run(line);
-                _hadError = false;
-            }
+            Report(token.Line, " at '" + token.Lexeme + "'", message);
         }
+    }
 
-        private static void Run(string source)
+    public static void Error(int line, string message)
+    {
+        Report(line, "", message);
+    }
+
+    private static void Report(int line, string where, string? message)
+    {
+        if (message is not null)
         {
-            var scanner = new Scanner(source);
-            var tokens = scanner.ScanTokens();
-            var parser = new Parser(tokens);
-            var statements = parser.Parse();
-
-            if (_hadError) return;
-
-            var resolver = new Resolver(_interpreter);
-            resolver.Resolve(statements);
-
-            if (_hadError) return;
-
-            _interpreter.Intepret(statements);
+            Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
         }
-
-        public static void RuntimeError(RuntimeError error)
+        else
         {
-            Console.WriteLine($"{error.Message}\n[line {error.Token.Line}]");
-            _hadRuntimeError = true;
+            Console.Error.WriteLine($"[line {line}] Error{where}");
         }
-
-
-        public static void Error(Token token, string message)
-        {
-            if (token.Type == TokenType.EOF)
-            {
-                Report(token.Line, "at end", message);
-            }
-            else
-            {
-                Report(token.Line, "at '" + token.Lexeme + "'", message);
-            }
-        }
-
-        public static void Error(int line, string message)
-        {
-            Report(line, "", message);
-        }
-
-        private static void Report(int line, string where, string message)
-        {
-            Console.WriteLine($"[line {line}] Error {where}: {message}");
-            _hadError = true;
-        }
+        _hadError = true;
     }
 }

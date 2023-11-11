@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Lox;
 
-namespace Lox
+public class Void
 {
-    public class Void
-    {
-        private Void() { }
-    }
+    private Void() { }
 }
