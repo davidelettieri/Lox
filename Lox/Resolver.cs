@@ -47,7 +47,6 @@ public class Resolver(Interpreter interpreter) : IExprVisitor, IStmtVisitor
 
     private void ResolveLocal(IExpr expr, Token name)
     {
-        var t = _scopes.ToArray();
         var scopeArray = _scopes.Reverse().ToArray();
         for (int i = _scopes.Count - 1; i >= 0; i--)
         {

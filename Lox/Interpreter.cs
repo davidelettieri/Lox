@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using static Lox.TokenType;
 
@@ -199,17 +198,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
                 var (lm, rm) = CheckNumberOperands(expr.Operator, left, right);
                 return lm - rm;
             case PLUS:
-                if (left is double ld && right is double rd)
+                return left switch
                 {
-                    return ld + rd;
-                }
-
-                if (left is string ls && right is string rs)
-                {
-                    return ls + rs;
-                }
-
-                throw new RuntimeError(expr.Operator, "Operands must be two numbers or two strings.");
+                    double ld when right is double rd => ld + rd,
+                    string ls when right is string rs => ls + rs,
+                    _ => throw new RuntimeError(expr.Operator, "Operands must be two numbers or two strings.")
+                };
             case SLASH:
                 var (lsl, rsl) = CheckNumberOperands(expr.Operator, left, right);
                 return lsl / rsl;

@@ -8,8 +8,8 @@ namespace Lox;
 public class Scanner(string source)
 {
     private readonly List<Token> _tokens = new();
-    private int _start = 0;
-    private int _current = 0;
+    private int _start;
+    private int _current;
     private int _line = 1;
     private static readonly Dictionary<string, TokenType> Keywords = new() {
         { "and", AND },

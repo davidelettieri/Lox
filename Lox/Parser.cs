@@ -454,31 +454,6 @@ public class Parser(List<Token> tokens)
         throw Error(Peek(), "Expect expression.");
     }
 
-    private IExpr FunctionExpr()
-    {
-        Consume(LEFT_PAREN, "Expect '(' after fun.");
-        var parameters = new List<Token>();
-
-        if (!Check(RIGHT_PAREN))
-        {
-            do
-            {
-                if (parameters.Count >= 255)
-                {
-                    Error(Peek(), "Can't have more than 255 parameters.");
-                }
-
-                parameters.Add(Consume(IDENTIFIER, "Expect parameter name."));
-            } while (Match(COMMA));
-        }
-
-        Consume(RIGHT_PAREN, "Expect ')' after parameters");
-        Consume(LEFT_BRACE, "Expect '{' after parameters");
-        var body = Block();
-
-        return new AnonymousFunction(parameters, body);
-    }
-
     private bool Match(params TokenType[] types)
     {
         foreach (var type in types)
