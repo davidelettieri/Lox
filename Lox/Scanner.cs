@@ -7,7 +7,7 @@ namespace Lox;
 
 public class Scanner(string source)
 {
-    private readonly List<Token> _tokens = new();
+    private readonly List<Token> _tokens = [];
     private int _start;
     private int _current;
     private int _line = 1;
@@ -112,10 +112,7 @@ public class Scanner(string source)
         while (IsAlphaNumeric(Peek())) Advance();
 
         var text = source.Substring(_start, _current - _start);
-
-        if (!Keywords.TryGetValue(text, out TokenType type))
-            type = IDENTIFIER;
-
+        var type = Keywords.GetValueOrDefault(text, IDENTIFIER);
         AddToken(type);
     }
 
@@ -130,7 +127,7 @@ public class Scanner(string source)
             while (IsDigit(Peek())) Advance();
         }
 
-        AddToken(NUMBER, double.Parse(source.Substring(_start, _current - _start), CultureInfo.InvariantCulture));
+        AddToken(NUMBER, double.Parse(source.AsSpan(_start, _current - _start), CultureInfo.InvariantCulture));
     }
 
     private void String()
@@ -169,35 +166,14 @@ public class Scanner(string source)
         return true;
     }
 
-    private char Peek()
-    {
-        if (IsAtEnd())
-        {
-            return '\0';
-        }
-
-        return source[_current];
-    }
-
-    private char PeekNext()
-    {
-        if (_current + 1 >= source.Length) return '\0';
-
-        return source[_current + 1];
-    }
-
-    private bool IsAlpha(char c)
-    {
-        return (c >= 'a' && c <= 'z') ||
-               (c >= 'A' && c <= 'Z') ||
-               c == '_';
-    }
-
-    private bool IsAlphaNumeric(char c) => IsAlpha(c) || IsDigit(c);
+    private char Peek() => IsAtEnd() ? '\0' : source[_current];
+    private char PeekNext() => _current + 1 >= source.Length ? '\0' : source[_current + 1];
+    private static bool IsAlpha(char c) => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or '_';
+    private static bool IsAlphaNumeric(char c) => IsAlpha(c) || IsDigit(c);
 
     // .NET Char.IsDigit behaves differently from Java, we can safely use the standard library
     // https://docs.microsoft.com/en-us/dotnet/api/system.char.isdigit?view=netcore-3.1
-    private bool IsDigit(char c) => Char.IsDigit(c);
+    private static bool IsDigit(char c) => char.IsDigit(c);
     private bool IsAtEnd() => _current >= source.Length;
 
     private char Advance()

@@ -70,7 +70,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
         {
             superclass = Evaluate(stmt.Superclass);
 
-            if (!(superclass is LoxClass))
+            if (superclass is not LoxClass)
             {
                 throw new RuntimeError(stmt.Superclass.Name, "Superclass must be a class.");
             }
@@ -232,17 +232,18 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
             }
         }
 
-        if (callee is ILoxCallable function)
+        if (callee is not ILoxCallable function)
         {
-            if (arguments.Count != function.Arity())
-            {
-                throw new RuntimeError(expr.Paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
-            }
-
-            return function.Call(this, arguments);
+            throw new RuntimeError(expr.Paren, "Can only call functions and classes.");
+        }
+        
+        if (arguments.Count != function.Arity())
+        {
+            throw new RuntimeError(expr.Paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
         }
 
-        throw new RuntimeError(expr.Paren, "Can only call functions and classes.");
+        return function.Call(this, arguments);
+
     }
 
     public object Visit(Get expr)
@@ -301,7 +302,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
             {
                 throw new Exception("Shouldn't be null");
             }
-            
+
             li.Set(expr.Name, value);
             return value;
         }
@@ -352,48 +353,49 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
     public object? Visit(Variable expr)
         => LookUpVariable(expr.Name, expr);
 
-    private object? LookUpVariable(Token name, IExpr expr)
-    {
-        if (_locals.TryGetValue(expr, out var distance))
-        {
-            return _environment?.GetAt(distance, name.Lexeme);
-        }
+    private object? LookUpVariable(Token name, IExpr expr) 
+        => _locals.TryGetValue(expr, out var distance) ? _environment?.GetAt(distance, name.Lexeme) : Globals.Get(name);
 
-        return Globals.Get(name);
-    }
-
-    private double CheckNumberOperand(Token op, object? operand)
+    private static double CheckNumberOperand(Token op, object? operand)
     {
         if (operand is double d) return d;
         throw new RuntimeError(op, "Operand must be a number.");
     }
 
-    private (double left, double right) CheckNumberOperands(Token op, object? left, object? right)
+    private static (double left, double right) CheckNumberOperands(Token op, object? left, object? right)
     {
         if (left is double l && right is double r) return (l, r);
         throw new RuntimeError(op, "Operands must be numbers.");
     }
 
-    private bool IsTruthy(object? obj)
+    private static bool IsTruthy(object? obj)
     {
         if (obj is null) return false;
         if (obj is bool b) return b;
         return true;
     }
 
-    private bool IsEqual(object? a, object? b)
+    private static bool IsEqual(object? a, object? b)
     {
-        if (a is null && b is null) return true;
-        if (a is null) return false;
-        if (a is Double.NaN)
+        if (a == null && b is null)
+        {
+            return true;
+        }
+
+        if (a == null)
+        {
             return false;
-        if (b is Double.NaN)
+        }
+
+        if (a is double.NaN || b is double.NaN)
+        {
             return false;
+        }
 
         return a.Equals(b);
     }
 
-    private string Stringify(object? value)
+    private static string Stringify(object? value)
     {
         return value switch
         {

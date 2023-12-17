@@ -29,13 +29,11 @@ public class LoxEnvironment(LoxEnvironment? enclosing)
             return;
         }
 
-        if (Enclosing != null)
+        if (Enclosing == null)
         {
-            Enclosing.Assign(name, value);
-            return;
+            throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
         }
-
-        throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
+        Enclosing.Assign(name, value);
     }
 
     public object? GetAt(int distance, string name)
@@ -57,7 +55,7 @@ public class LoxEnvironment(LoxEnvironment? enclosing)
     {
         var environment = this;
 
-        for (int i = 0; i < distance; i++)
+        for (var i = 0; i < distance; i++)
         {
             environment = environment?.Enclosing;
         }

@@ -10,7 +10,7 @@ public class LoxAnonymousFunction(AnonymousFunction declaration, LoxEnvironment 
     {
         var environment = new LoxEnvironment(closure);
 
-        for (int i = 0; i < declaration.Parameters.Count; i++)
+        for (var i = 0; i < declaration.Parameters.Count; i++)
         {
             environment.Define(declaration.Parameters[i].Lexeme, arguments[i]);
         }
@@ -25,7 +25,7 @@ public class LoxAnonymousFunction(AnonymousFunction declaration, LoxEnvironment 
         return null;
     }
 
-    public override string ToString() => $"<anonymous fn>";
+    public override string ToString() => "<anonymous fn>";
 }
 
 public class LoxFunction(Function declaration, LoxEnvironment? closure, bool isInitializer)
@@ -44,7 +44,7 @@ public class LoxFunction(Function declaration, LoxEnvironment? closure, bool isI
     {
         var environment = new LoxEnvironment(closure);
 
-        for (int i = 0; i < declaration.Parameters.Count; i++)
+        for (var i = 0; i < declaration.Parameters.Count; i++)
         {
             environment.Define(declaration.Parameters[i].Lexeme, arguments[i]);
         }
@@ -54,14 +54,10 @@ public class LoxFunction(Function declaration, LoxEnvironment? closure, bool isI
         }
         catch (ReturnException returnValue)
         {
-            if (isInitializer) return closure?.GetAt(0, "this");
-                
-            return returnValue.Value;
+            return isInitializer ? closure?.GetAt(0, "this") : returnValue.Value;
         }
 
-        if (isInitializer) return closure?.GetAt(0, "this");
-
-        return null;
+        return isInitializer ? closure?.GetAt(0, "this") : null;
     }
 
     public override string ToString() => $"<fn {declaration.Name.Lexeme}>";

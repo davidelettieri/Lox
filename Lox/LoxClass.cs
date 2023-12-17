@@ -2,28 +2,22 @@ using System.Collections.Generic;
 
 namespace Lox;
 
-public class LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxFunction> methods)
+public class LoxClass(string name, LoxClass? superclass, IReadOnlyDictionary<string, LoxFunction> methods)
     : ILoxCallable
 {
     public string Name { get; } = name;
 
-    public LoxFunction? FindMethod(string name)
+    public LoxFunction? FindMethod(string methodName)
     {
-        if (methods.TryGetValue(name, out var method))
+        if (methods.TryGetValue(methodName, out var method))
         {
             return method;
         }
 
-        if (superclass is not null)
-        {
-            return superclass.FindMethod(name);
-        }
-
-        return null;
+        return superclass?.FindMethod(methodName);
     }
 
-    public override string ToString()
-        => Name;
+    public override string ToString() => Name;
 
     public int Arity()
     {
@@ -36,10 +30,7 @@ public class LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxF
     {
         var instance = new LoxInstance(this);
         var initializer = FindMethod("init");
-        if (initializer != null)
-        {
-            initializer.Bind(instance).Call(interpreter, arguments);
-        }
+        initializer?.Bind(instance).Call(interpreter, arguments);
         return instance;
     }
 }

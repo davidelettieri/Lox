@@ -4,9 +4,7 @@ using VisitorGenerator;
 namespace Lox;
 
 [VisitorNode]
-public partial interface IExpr
-{
-}
+public partial interface IExpr;
 
 public partial class Binary(IExpr left, Token @operator, IExpr right) : IExpr
 {

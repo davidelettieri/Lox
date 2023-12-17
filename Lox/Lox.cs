@@ -3,29 +3,29 @@ using System.IO;
 
 namespace Lox;
 
-static class Lox
+internal static class Lox
 {
     private static readonly Interpreter Interpreter = new();
     private static bool _hadError;
     private static bool _hadRuntimeError;
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         var oldInputEncoding = Console.InputEncoding;
         var oldOutputEncoding = Console.OutputEncoding;
         Console.InputEncoding = System.Text.Encoding.UTF8;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        if (args.Length > 1)
+        switch (args.Length)
         {
-            Console.WriteLine("Usage: Lox [script]");
-            Environment.Exit(64);
-        }
-        else if (args.Length == 1)
-        {
-            RunFile(args[0]);
-        }
-        else
-        {
-            RunPrompt();
+            case > 1:
+                Console.WriteLine("Usage: Lox [script]");
+                Environment.Exit(64);
+                break;
+            case 1:
+                RunFile(args[0]);
+                break;
+            default:
+                RunPrompt();
+                break;
         }
 
         Console.InputEncoding = oldInputEncoding;
@@ -99,14 +99,9 @@ static class Lox
 
     private static void Report(int line, string where, string? message)
     {
-        if (message is not null)
-        {
-            Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
-        }
-        else
-        {
-            Console.Error.WriteLine($"[line {line}] Error{where}");
-        }
+        Console.Error.WriteLine(message is not null
+            ? $"[line {line}] Error{where}: {message}"
+            : $"[line {line}] Error{where}");
         _hadError = true;
     }
 }

@@ -4,12 +4,9 @@ using static Lox.TokenType;
 
 namespace Lox;
 
-public class Parser(List<Token> tokens)
+public class Parser(IReadOnlyList<Token> tokens)
 {
-    private class ParseError : Exception
-    {
-
-    }
+    private class ParseError : Exception;
 
     private int _current;
 
@@ -42,9 +39,7 @@ public class Parser(List<Token> tokens)
                 Consume(FUN, null);
                 return Function("function");
             }
-            if (Match(VAR)) return VarDeclaration();
-
-            return Statement();
+            return Match(VAR) ? VarDeclaration() : Statement();
         }
         catch (ParseError)
         {
@@ -53,7 +48,7 @@ public class Parser(List<Token> tokens)
         }
     }
 
-    private IStmt ClassDeclaration()
+    private Class ClassDeclaration()
     {
         var name = Consume(IDENTIFIER, "Expect class name");
 
@@ -84,8 +79,7 @@ public class Parser(List<Token> tokens)
         if (Match(PRINT)) return PrintStatement();
         if (Match(RETURN)) return ReturnStatement();
         if (Match(WHILE)) return WhileStatement();
-        if (Match(LEFT_BRACE)) return new Block(Block());
-        return ExpressionStatement();
+        return Match(LEFT_BRACE) ? new Block(Block()) : ExpressionStatement();
     }
 
     private IStmt ForStatement()
@@ -127,7 +121,7 @@ public class Parser(List<Token> tokens)
 
         if (increment != null)
         {
-            body = new Block(new List<IStmt>() { body, new Expression(increment) });
+            body = new Block([body, new Expression(increment)]);
         }
 
         condition ??= new Literal(true);
@@ -135,13 +129,13 @@ public class Parser(List<Token> tokens)
 
         if (initializer != null)
         {
-            body = new Block(new List<IStmt>() { initializer, body });
+            body = new Block([initializer, body]);
         }
 
         return body;
     }
 
-    private IStmt WhileStatement()
+    private While WhileStatement()
     {
         Consume(LEFT_PAREN, "Expect '(' after if");
         var expr = Expression();
@@ -151,7 +145,7 @@ public class Parser(List<Token> tokens)
         return new While(expr, stmt);
     }
 
-    private IStmt IfStatement()
+    private If IfStatement()
     {
         Consume(LEFT_PAREN, "Expect '(' after if");
         var expr = Expression();
@@ -167,14 +161,14 @@ public class Parser(List<Token> tokens)
         return new If(expr, thenBranch, elseBranch);
     }
 
-    private IStmt PrintStatement()
+    private Print PrintStatement()
     {
         var value = Expression();
         Consume(SEMICOLON, "Expect ';' after value.");
         return new Print(value);
     }
 
-    private IStmt ReturnStatement()
+    private ReturnStmt ReturnStatement()
     {
         var keyword = Previous();
         IExpr? value = null;
@@ -182,13 +176,14 @@ public class Parser(List<Token> tokens)
         {
             value = Expression();
         }
+
         Consume(SEMICOLON, "Expect ';' after return value.");
         return new ReturnStmt(keyword, value);
     }
 
-    private IStmt VarDeclaration()
+    private Var VarDeclaration()
     {
-        Token name = Consume(IDENTIFIER, "Expect variable name.");
+        var name = Consume(IDENTIFIER, "Expect variable name.");
 
         IExpr? initializer = null;
         if (Match(EQUAL))
@@ -200,7 +195,7 @@ public class Parser(List<Token> tokens)
         return new Var(name, initializer);
     }
 
-    private IStmt ExpressionStatement()
+    private Expression ExpressionStatement()
     {
         var value = Expression();
         Consume(SEMICOLON, "Expect ';' after expression.");
@@ -362,17 +357,17 @@ public class Parser(List<Token> tokens)
 
     private IExpr Unary()
     {
-        if (Match(BANG, MINUS))
+        if (!Match(BANG, MINUS))
         {
-            var op = Previous();
-            var right = Unary();
-            return new Unary(op, right);
+            return Call();
         }
 
-        return Call();
+        var op = Previous();
+        var right = Unary();
+        return new Unary(op, right);
     }
 
-    private IExpr FinishCall(IExpr callee)
+    private Call FinishCall(IExpr callee)
     {
         var arguments = new List<IExpr>();
 
@@ -500,7 +495,7 @@ public class Parser(List<Token> tokens)
     private Token Peek() => tokens[_current];
     private Token Previous() => tokens[_current - 1];
 
-    private ParseError Error(Token token, string? message)
+    private static ParseError Error(Token token, string? message)
     {
         Lox.Error(token, message);
         return new ParseError();

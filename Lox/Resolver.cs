@@ -48,13 +48,11 @@ public class Resolver(Interpreter interpreter) : IExprVisitor, IStmtVisitor
     private void ResolveLocal(IExpr expr, Token name)
     {
         var scopeArray = _scopes.Reverse().ToArray();
-        for (int i = _scopes.Count - 1; i >= 0; i--)
+        for (var i = _scopes.Count - 1; i >= 0; i--)
         {
-            if (scopeArray[i].ContainsKey(name.Lexeme))
-            {
-                interpreter.Resolve(expr, _scopes.Count - 1 - i);
-                return;
-            }
+            if (!scopeArray[i].ContainsKey(name.Lexeme)) continue;
+            interpreter.Resolve(expr, _scopes.Count - 1 - i);
+            return;
         }
     }
 
@@ -135,14 +133,13 @@ public class Resolver(Interpreter interpreter) : IExprVisitor, IStmtVisitor
         {
             Lox.Error(stmt.Keyword, "Can't return from top-level code.");
         }
-        if (stmt.Value != null)
+
+        if (stmt.Value == null) return;
+        if (_currentFunction == FunctionType.INITIALIZER)
         {
-            if (_currentFunction == FunctionType.INITIALIZER)
-            {
-                Lox.Error(stmt.Keyword, "Can't return a value from an initializer.");
-            }
-            Resolve(stmt.Value);
+            Lox.Error(stmt.Keyword, "Can't return a value from an initializer.");
         }
+        Resolve(stmt.Value);
     }
 
     public void Visit(While stmt)

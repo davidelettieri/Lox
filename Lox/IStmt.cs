@@ -4,9 +4,7 @@ using VisitorGenerator;
 namespace Lox;
 
 [VisitorNode]
-public partial interface IStmt
-{
-}
+public partial interface IStmt;
 
 public partial class Block(List<IStmt> statements) : IStmt
 {
