@@ -232,22 +232,6 @@ public class Resolver(Interpreter interpreter) : IExprVisitor, IStmtVisitor
         Resolve(expr.Right);
     }
 
-    public void Visit(AnonymousFunction expr)
-    {
-        var enclosingFunction = _currentFunction;
-        _currentFunction = FunctionType.FUNCTION;
-        BeginScope();
-        foreach (var param in expr.Parameters)
-        {
-            Declare(param);
-            Define(param);
-        }
-
-        Resolve(expr.Body);
-        EndScope();
-        _currentFunction = enclosingFunction;
-    }
-
     public void Visit(Variable expr)
     {
         if (_scopes.Count > 0 && _scopes.Peek().TryGetValue(expr.Name.Lexeme, out var defined) && !defined)

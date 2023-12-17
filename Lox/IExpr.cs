@@ -77,9 +77,3 @@ public partial class Assign(Token name, IExpr value) : IExpr
     public Token Name { get; } = name;
     public IExpr Value { get; } = value;
 }
-
-public partial class AnonymousFunction(List<Token> parameters, List<IStmt> body) : IExpr
-{
-    public List<Token> Parameters { get; } = parameters;
-    public List<IStmt> Body { get; } = body;
-}

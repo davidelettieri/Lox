@@ -258,16 +258,6 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor
         throw new RuntimeError(expr.Name, "Only instances have properties.");
     }
 
-    public object Visit(AnonymousFunction expr)
-    {
-        if (_environment is null)
-        {
-            throw new Exception("Should not be null");
-        }
-
-        return new LoxAnonymousFunction(expr, _environment);
-    }
-
     public object? Visit(Grouping expr)
         => Evaluate(expr.Expression);
 
